@@ -1,0 +1,86 @@
+//////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                      //
+//                                   °o.---------.o°                                    //
+//                                    |  FReTiAA  |                                     //
+//                                   .o°---------°o.                                    //
+//                                                                                      //
+//                           - Free Real Time Audio Analyzer -                          //
+//                                                                                      //
+//                                     by TiBo, 2017                                    //
+//////////////////////////////////////////////////////////////////////////////////////////
+
+Personal notes:
+---------------
+Il semblerait que l'appel a QIODEVICE:writeData ou réaliser la connection entre le signal readyRead et un SLOT de notre choix se resume à la meme procédure mais par un biais différents.
+Il semblerait toutefgois plus facile d'utiliser QIODEVICE:writeData étant donné que maxsize et data sont directement disponible et il n'est don cpas nécessaire d'aller lire le uffer de la carte directement
+++ Replace QVector By QList wich is faster according to the QT documentation.
+
+
+
+
+                ============
+                === TODO ===
+                ============
+
+Functionnalities:
+-----------------
+[DONE]  Trigger
+[DONE]  Export Data as csv
+[DONE]  Pause
++       REC / Replay
+[DONE]  phase Spectrum
+[DONE]  HP filter
++       On spectrum show min and max colorbar level with horizontal line. i.e. at wich level the data are not longer coded in color gradient but still at the same color
+[DONE]  Add interaction iselectaxes to change the plotting range
+[DONE]  Right Click to popupmenu and to reset view
++       Resizable rectangle selection
+[DONE]  Plot ineraction to display values + BUGS !!!
++       Zoom Action using CTRL on mouse wheel
++       Arrows Action for XY value in spectrogram L-R-UP-DOWN
++       superimpose Plot Intensity along all acsuiqition
++       (Cepstrum)
++       (Modulation Spectrum)
++       Import/Open Wav File
+
+
+Code Improvements:
+------------------
+[DONE]  Class Window
++       Add multimeter to the Class QFGraph
+...........................................................
++       More elegant solution than DataSharer Class
+[DONE]  Do a CLASS QFGraph (include DataTRacer, Zoom, etc ...)
+[DONE]  CLass AxisRangeDialog
+[DONE]  Properly use and exchange values with QDialog classes !
+[DONE]  Allow Export Data only in Stop mode
++       Use disconnect instead of global variable like in trigger in Actions managment
++       Clear audioinput buffer and close all device before exiting (errro like :"Memory pool destroyed but not all memory blocks freed! 3 remain.")
++       emit signal To updateTracerText should be managed inside the QFGraph class.
++       Use only on REPLOT in LiveView and one by modficcation in StopMode!!!
++       Properly managed XY Value Range for Spectrogram !!!!
++       UPDATE DATA in Widget using SLOTS and not function in MainWindow
++       Trigger tkae various time to stop
++       DownSampling for all plotters
++       Make proper heirtage using widget *parent=0 and :Qwidget(parent) in cpp file
+
+
+
+
+                ============
+                === BUGS ===
+                ============
+
+[DONE]  points value fail in octave spectrum
+[DONE]  Octave Spectrum and Spectrum Don't close when main application close
+[DONE]  When change Itensity weighting, value only update when moving the mouse on axis
++       Critical Crash When selecting some Audio Input Device  : test supported* QList is is empty before assign it to combobox !!!
++       Observation Time do not exactly correspond to the graph and to the rectangle !!!!
+[DONE]  Not able to apply 20 Hz HHP filter when application is in Pause !! => disavle button
+[DONE]  double Click on Spectrogram Axes place the dialog box on the Oscillogram plot !!!!!
++       FFT size is NFFT/2 and not NFFT/2+1 ==> Fix frequency values!
+[DONE]  filter's gain not equal to one!
++       axes not match when zoom on oscillogram or spectrogram in stop mode
++       Last spectrogram values are not assign.  Confusion bewteen size of colormap and size of Spectrogram : set antilaising and interpolation FALSE to properly observe the phenomenum
+[DONE]  App Crash when disble XY value on spectrogram!!!!
+[DONE]  ToolBar stays when disable spectrogram graph !
+[DONE]  XY on octave spectrum cause critical CRASH
