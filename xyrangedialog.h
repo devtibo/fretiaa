@@ -13,7 +13,7 @@ class XYRangeDialog  : public QDialog
     Q_OBJECT
 
 public:
-    XYRangeDialog(QWidget *parent = 0,float x1=0, float x2=0);
+    XYRangeDialog(QWidget *parent=0, float x1=0, float x2=0);
     // void setDefaultValues(float,float);
     // ~XYRangeDialog();
 

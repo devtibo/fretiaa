@@ -11,7 +11,7 @@ class Spectrogram : public QWidget
 {
     Q_OBJECT
 public:
-    explicit Spectrogram(DataSharer*);
+    explicit Spectrogram(DataSharer*,QWidget *parent=0);
     DataSharer *m_data;
     QCustomPlot *cPlot = new QCustomPlot(this);
     QCPColorMap *colorMap = new QCPColorMap(cPlot->xAxis, cPlot->yAxis);

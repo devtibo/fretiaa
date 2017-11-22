@@ -12,7 +12,7 @@ class GainConfigDial: public QDialog
 
 public:
     // Constructor
-    GainConfigDial(float,QString,float, QString, float, QString, QWidget *parent=0);
+    GainConfigDial( float,QString,float, QString, float, QString,QWidget *parent=0);
 
     // Dialog box
     QDialog *dial = new QDialog;

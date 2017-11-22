@@ -108,4 +108,5 @@ RESOURCES += \
 DISTFILES += \
     NOTES \
     AUTHORS \
-    LICENSE
+    LICENSE \
+    CHANGELOG

@@ -8,7 +8,7 @@ class AboutDialog: public QDialog
     Q_OBJECT
 
 public:
-    AboutDialog();
+    AboutDialog(QWidget *parent = 0);
     QDialog *dial = new QDialog;
 
 public slots:

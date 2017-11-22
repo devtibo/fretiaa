@@ -1,3 +1,3 @@
 #include "datasharer.h"
 
-DataSharer::DataSharer() {}
+DataSharer::DataSharer(QWidget*) {}

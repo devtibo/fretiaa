@@ -8,7 +8,7 @@
 class OneNOctaveFilters
 {
 public:
-    OneNOctaveFilters(DataSharer*);
+    OneNOctaveFilters( DataSharer*, QWidget *parent=0);
     QList<Biquad*> filters_FcLow_stage1;
     QList<Biquad*> filters_FcLow_stage2;
     QList<Biquad*> filters_FcLow_stage3;

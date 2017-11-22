@@ -5,7 +5,7 @@
 #include <QDialogButtonBox>
 #include <QPushButton>
 
-AboutDialog::AboutDialog()
+AboutDialog::AboutDialog(QWidget *)
 {
     QHBoxLayout *hLayout = new QHBoxLayout;
     QVBoxLayout *vLayout = new QVBoxLayout;

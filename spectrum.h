@@ -14,7 +14,7 @@ class Spectrum : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit Spectrum(DataSharer*);
+    explicit Spectrum( DataSharer*,QWidget *parent=0);
     DataSharer *m_data;
     void setData(QVector<double>,int );
     void closeEvent( QCloseEvent* );

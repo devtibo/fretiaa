@@ -2,7 +2,7 @@
 #include <QDesktopWidget>
 #include "qfgraph.h"
 
-OctaveSpectrum::OctaveSpectrum(DataSharer* data)
+OctaveSpectrum::OctaveSpectrum(DataSharer* data, QWidget*)
 {
     m_data = data;
 

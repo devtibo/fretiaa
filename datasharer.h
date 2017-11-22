@@ -6,7 +6,7 @@
 class DataSharer
 {
 public:
-    DataSharer();
+    DataSharer(QWidget* parent = Q_NULLPTR);
     int length_fft;
     float fs;
     float t_begin;

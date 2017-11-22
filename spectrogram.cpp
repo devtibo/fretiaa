@@ -2,7 +2,7 @@
 #include "xyrangedialog.h"
 using namespace ffft;
 
-Spectrogram::Spectrogram(DataSharer* data)
+Spectrogram::Spectrogram(DataSharer* data, QWidget*)
 {
 
     m_data = data;
@@ -58,8 +58,6 @@ Spectrogram::Spectrogram(DataSharer* data)
     connect(cPlot->xAxis,SIGNAL(rangeChanged(QCPRange)),this,SLOT(updateXSpectrogramAxes(QCPRange)));
 
 
-
-
     rect = new QCPItemRect(cPlot);
     rect->setBrush(QBrush(QColor(0,0,255,70) ));
     rect->setSelectable(false);
@@ -83,6 +81,8 @@ Spectrogram::Spectrogram(DataSharer* data)
     // m_qcfgraph->setToolBarVisible(false);
     connect(m_qcfgraph,SIGNAL(exportData()), this, SLOT(onExportData()));
     connect(this,SIGNAL(updateTracer()),m_qcfgraph,SLOT(updateTracerText())); // NOT VERY GOOD, Should be in QFGraph
+
+
 
 }
 

@@ -29,7 +29,7 @@ Functionnalities:
 [DONE]  Pause
 +       REC / Replay
 [DONE]  phase Spectrum
-[DONE]  HP filter
+[DONE]  HP 20 Hz filter
 +       On spectrum show min and max colorbar level with horizontal line. i.e. at wich level the data are not longer coded in color gradient but still at the same color
 [DONE]  Add interaction iselectaxes to change the plotting range
 [DONE]  Right Click to popupmenu and to reset view
@@ -40,14 +40,16 @@ Functionnalities:
 +       superimpose Plot Intensity along all acsuiqition
 +       (Cepstrum)
 +       (Modulation Spectrum)
-+       Import/Open Wav File
++       Import/Open Wav Files
 
 
 Code Improvements:
 ------------------
++++ Main improvments +++
++!!!!!! MULTITHREADING !!!!
+.............................
 [DONE]  Class Window
 +       Add multimeter to the Class QFGraph
-...........................................................
 +       More elegant solution than DataSharer Class
 [DONE]  Do a CLASS QFGraph (include DataTRacer, Zoom, etc ...)
 [DONE]  CLass AxisRangeDialog
@@ -57,12 +59,13 @@ Code Improvements:
 +       Clear audioinput buffer and close all device before exiting (errro like :"Memory pool destroyed but not all memory blocks freed! 3 remain.")
 +       emit signal To updateTracerText should be managed inside the QFGraph class.
 +       Use only on REPLOT in LiveView and one by modficcation in StopMode!!!
-+       Properly managed XY Value Range for Spectrogram !!!!
+[DONE]  Properly managed XY Value Range for Spectrogram !!!!
 +       UPDATE DATA in Widget using SLOTS and not function in MainWindow
 +       Trigger tkae various time to stop
-+       DownSampling for all plotters
-+       Make proper heirtage using widget *parent=0 and :Qwidget(parent) in cpp file
-
+[DONE]  DownSampling for all plotters [OK for oscillogram/spectrum and angle; not able for bar plot and colormap]
++       Antialisaing ???
+[DONE]  Make proper heirtage using widget *parent=0 and :Qwidget(parent) in cpp file
++       Replace following by a DCPGridLayout to use MarginGroup an align axesRect
 
 
 

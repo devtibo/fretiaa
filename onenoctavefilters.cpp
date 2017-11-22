@@ -5,7 +5,7 @@
 
 //TODO A TESTER EN PROFONDEUR !!!
 
-OneNOctaveFilters::OneNOctaveFilters( DataSharer *data )
+OneNOctaveFilters::OneNOctaveFilters( DataSharer *data,QWidget* )
 {
 #ifdef DEBUG
     QFile f( "filters.m" );

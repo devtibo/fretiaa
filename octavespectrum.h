@@ -11,7 +11,7 @@ class OctaveSpectrum : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit OctaveSpectrum(DataSharer*);
+    explicit OctaveSpectrum(DataSharer*,QWidget *parent=0);
     DataSharer *m_data;
     QCustomPlot *cPlot;
     QCPBars *newBars ;

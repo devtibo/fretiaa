@@ -10,7 +10,7 @@ class AudioInputConfigDial : public QDialog
     Q_OBJECT
 
 public:
-    AudioInputConfigDial(AudioEngine *audioengine);
+    AudioInputConfigDial(AudioEngine *audioengine,QWidget *parent = 0);
 
     // To create the dialog Box
     QDialog *dial = new QDialog;

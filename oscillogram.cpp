@@ -2,7 +2,7 @@
 #include "xyrangedialog.h"
 
 //Oscillogram::Oscillogram(QWidget *parent) : QWidget(parent)
-Oscillogram::Oscillogram(DataSharer *data)
+Oscillogram::Oscillogram(DataSharer *data, QWidget*)
 {
     m_Data = data;
 
@@ -187,62 +187,6 @@ void Oscillogram::updateRect()
 //!
 //!
 
-/*
-void Oscillogram::resizeAxisDialog(QCPAxis * m_axis, QPoint pos)
-{
-    // Create Dialog
-    XYRangeDialog *dialog = new XYRangeDialog(this,m_axis->range().lower,m_axis->range().upper);
-
-    // Place the dialog box near the mouse pointer
-    dialog->move(pos);
-
-    // Process when OK button is clicked
-    if (dialog->exec() == QDialog::Accepted) {
-        m_axis->setRange(dialog->val1, dialog->val2);
-        cPlot->replot();
-    }
-}
-
-// FIXME FIND A WAY TO PASS VALUES (QCPAxis to SLOTs)
-void  Oscillogram::onAxisDoubleClick(QCPAxis* m_axis,QCPAxis::SelectablePart m_selectedParts,QMouseEvent* event)
-{
-    QPoint posInt;
-    posInt.setX(round(event->screenPos().x()));
-    posInt.setY(round(event->screenPos().y()));
-    resizeAxisDialog(m_axis, posInt);
-}
-
-void Oscillogram::onCustomContextMenuRequested(QPoint pos)
-{
-    QMenu *menu = new QMenu(cPlot);
-    menu->setAttribute(Qt::WA_DeleteOnClose);
-    contextPos = pos;
-    menu->addAction("Resize X-Axis", this, SLOT(onXAxisResize()));
-    menu->addAction("Resize Y-Axis", this, SLOT(onYAxisResize()));
-    menu->addAction("Export Data", this, SLOT(onExportData()));
-    menu->addAction("Reset Axis", this, SLOT(onResetAxis()));
-    menu->popup(cPlot->mapToGlobal(pos));
-}
-
-void Oscillogram::onXAxisResize()
-{
-    resizeAxisDialog(cPlot->xAxis, contextPos);
-}
-
-void Oscillogram::onYAxisResize()
-{
-    resizeAxisDialog(cPlot->yAxis, contextPos);
-}
-
-
-void Oscillogram::onResetAxis()
-{
-    cPlot->xAxis->setRange(0,m_Data->observationTime);
-    cPlot->yAxis->setRange(-1,1);
-    cPlot->replot();
-}
-
-*/
 void Oscillogram::onExportData()
 {   connect(m_qcfgraph,SIGNAL(exportData()), this, SLOT(onExportData()));
 

@@ -6,7 +6,7 @@
 # include "qfgraph.h"
 
 using namespace ffft;
-Spectrum::Spectrum(DataSharer* data)
+Spectrum::Spectrum(DataSharer* data, QWidget*)
 {
     m_data = data;
 

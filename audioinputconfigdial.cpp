@@ -11,7 +11,7 @@
 #include <QMessageBox>
 
 #include <QtMultimedia/QAudioDeviceInfo>
-AudioInputConfigDial::AudioInputConfigDial(AudioEngine *audioengine)
+AudioInputConfigDial::AudioInputConfigDial(AudioEngine *audioengine, QWidget*)
 {
     QVBoxLayout *layout = new QVBoxLayout;
 
