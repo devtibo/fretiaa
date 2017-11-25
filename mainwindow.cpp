@@ -183,7 +183,7 @@ MainWindow::MainWindow(QWidget *parent)
     //![] Spectrogram
     //! -------------
     cPlotSpectrogram = new Spectrogram(data);
-    data->qPlotSpectrogram = cPlotSpectrogram->graphViewer();
+    data->qPlotSpectrogram = cPlotSpectrogram->cPlot;
     connect(actionExportSpectro,SIGNAL(triggered()), cPlotSpectrogram,SLOT(onExportData()));
     //!--------------------------------------------------------------------
 
@@ -593,12 +593,13 @@ void MainWindow::onTriggerChanged(bool isChecked)
     if (isChecked)
     {
         connect(this,SIGNAL(dataAvalaible()),this, SLOT(updateTriggered()));
-        connect(cPlotOscillogram->graphViewer(),SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
+        //connect(cPlotOscillogram->graphViewer(),SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
+        connect(cPlotOscillogram->cPlot,SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
         cPlotOscillogram->triggerLine->setVisible(true);
     }else
     {
         disconnect(this,SIGNAL(dataAvalaible()),this, SLOT(updateTriggered()));
-        disconnect(cPlotOscillogram->graphViewer(),SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
+        disconnect(cPlotOscillogram->cPlot,SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
         cPlotOscillogram->triggerLine->setVisible(false);
     }
 }
@@ -629,10 +630,10 @@ void MainWindow::onMoveAnalyseRect(bool checked)
         //interactionRectZoomAction->setChecked(false);
         //interactionDragAxisAction->setChecked(false);
         //interactionMouseWheelZoomAction->setChecked(false);
-        connect(cPlotOscillogram->graphViewer(),SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
+        connect(cPlotOscillogram->cPlot,SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
     }
     else
-        disconnect(cPlotOscillogram->graphViewer(),SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
+        disconnect(cPlotOscillogram->cPlot,SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
 }
 
 

@@ -5,6 +5,8 @@
 
 # include "qfgraph.h"
 
+#include "windows.h"
+
 using namespace ffft;
 Spectrum::Spectrum(DataSharer* data, QWidget*)
 {
@@ -48,9 +50,12 @@ Spectrum::Spectrum(DataSharer* data, QWidget*)
 
     // FFT and ponderation window declaration
     fft_object = new FFTReal<float>(m_data->length_fft);
-    for (int i=0; i <m_data->length_fft;i++)
-        hann.append(0.5 *(1.0 - cos( (2.0*M_PI * i)/(m_data->length_fft-1.0))));
 
+    Windows *m_win = new Windows(Windows::hanning,m_data->length_fft);
+    win = m_win->getWin();
+    /*for (int i=0; i <m_data->length_fft;i++)
+        hann.append(0.5 *(1.0 - cos( (2.0*M_PI * i)/(m_data->length_fft-1.0))));
+*/
 
     // Create the window
     QWidget *c = new QWidget;
@@ -76,7 +81,7 @@ void Spectrum::setData(QVector<double> data,int idx_begin )
 
     int i,j;
     for( i=idx_begin, j=0; i<idx_begin+m_data->length_fft;i++, j++)
-        input_fft[j] = data.at(i) * hann.at(j);
+        input_fft[j] = data.at(i) * win.at(j);
 
     fft_object->do_fft(output_fft,input_fft);
 
@@ -119,10 +124,7 @@ void Spectrum::onExportData()
         return;
     }
 
-
-    QString fname;
-    fname  = QFileDialog::getSaveFileName(this, "Save file", "", ".csv");
-
+    QString fname  = QFileDialog::getSaveFileName(this, "Save file", "", ".csv");
     if ( !fname.isEmpty())
     {
         QFile f( fname );
@@ -134,6 +136,7 @@ void Spectrum::onExportData()
     }
 }
 
+// see: https://www.medphysics.wisc.edu/~ethan/phaseunwrap/unwrap.c
 void unwrap(QVector<double> &p, int N)
 // ported from matlab (Dec 2002)
 {

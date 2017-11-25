@@ -1,80 +1,50 @@
 #include "oscillogram.h"
 #include "xyrangedialog.h"
 
-//Oscillogram::Oscillogram(QWidget *parent) : QWidget(parent)
 Oscillogram::Oscillogram(DataSharer *data, QWidget*)
 {
     m_Data = data;
 
-
+    /* Create Graphic*/
     cPlot = new QCustomPlot();
-
-
-
-
-
-    cPlot->addGraph();
-
     cPlot->xAxis->setLabel("Time (s)");
     cPlot->yAxis->setLabel("Pressure (Pa)");
     cPlot->yAxis->setRange(-1,1);
     cPlot->xAxis->setRange(0,m_Data->observationTime);
-
-    cPlot->setInteraction(QCP::Interaction::iSelectItems);
+    cPlot->setInteraction(QCP::iSelectItems,true);
+    cPlot->addGraph();
     cPlot->graph()->setAdaptiveSampling(true);
 
+    /* Selection Rectangle */
     rect = new QCPItemRect(cPlot);
     rect->setBrush(QBrush(QColor(0,0,255,70) ));
     rect->setSelectable(false);
-
     rect->topLeft->setCoords(m_Data->observationTime-(m_Data->length_fft/m_Data->fs) ,1);
     rect->bottomRight->setCoords(m_Data->observationTime ,-1);
 
-
-
-
-
-
-
-    // connect(cPlot,SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(testMove(QMouseEvent*)));
-    /*
-    cPlot->setInteractions(QCP::iSelectAxes);
-    connect(cPlot,SIGNAL(           axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)),this,SLOT(onAxisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)));
-
-
-    cPlot->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect (cPlot, SIGNAL(customContextMenuRequested(QPoint)), this,SLOT( onCustomContextMenuRequested(QPoint)));
-*/
-    //connect(cPlot,SIGNAL(beforeReplot()),this, SLOT(updateXSpectrogramAxes()));)
-    connect(cPlot->xAxis,SIGNAL(rangeChanged(QCPRange)),this,SLOT(updateXSpectrogramAxes(QCPRange)));
-
-
-
-
-    //! /*Trigger*/
+    /* Trigger */
     triggerLine = new QCPItemLine(cPlot);
     triggerLine->start->setCoords(0,0.5);
     triggerLine->end->setCoords(data->observationTime,0.5);
-
     triggerLine->setPen(QPen(Qt::gray, 2.0, Qt::DashDotLine));
-
-    //triggeredMode = true;
-    cPlot->setInteraction(QCP::iSelectItems,true);
     triggerLevel = 0.5;
     triggerLine->setSelectable(true);
-    //connect(triggerLine,SIGNAL())
     triggerLine->setVisible(false);
 
-
-
+    /* Add plot to QCFGRaph*/
     m_qcfgraph = new QFGraph(cPlot,cPlot->graph(0));
     m_qcfgraph->setDefaultXYRange(QCPRange(0,m_Data->observationTime), QCPRange(-1,1));
+    connect(this,SIGNAL(updateTracer()),m_qcfgraph,SLOT(updateTracerText())); // NOT VERY GOOD, Should be in QFGraph
     connect(m_qcfgraph,SIGNAL(exportData()), this, SLOT(onExportData()));
 
-    connect(this,SIGNAL(updateTracer()),m_qcfgraph,SLOT(updateTracerText())); // NOT VERY GOOD, Should be in QFGraph
-
+    /* connections*/
+    connect(cPlot->xAxis,SIGNAL(rangeChanged(QCPRange)),this,SLOT(updateXSpectrogramAxes(QCPRange)));
 }
 
+
+/** =============================== **/
+/** =========== METHODS============ **/
+/** =============================== **/
 
 void Oscillogram::updateData(QVector<double> x, QVector<double> y)
 {
@@ -85,14 +55,51 @@ void Oscillogram::updateData(QVector<double> x, QVector<double> y)
     emit updateTracer(); // NOT VERY GOOD, Should be in QFGraph
 }
 
-QCustomPlot* Oscillogram::graphViewer()
-{
-    return cPlot;
-}
+/** =============================== **/
+/** ======= SETTERS/GETTERS ======= **/
+/** =============================== **/
 
 void Oscillogram::setYlabel(QString str)
 {
     cPlot->yAxis->setLabel(str);
+}
+
+
+/** =============================== **/
+/** =========== SLOTS ============= **/
+/** =============================== **/
+void Oscillogram::updateRect()
+{
+    float windowsTime = m_Data->length_fft *1.0 / m_Data->fs;
+    rect->topLeft->setCoords(m_Data->observationTime- windowsTime ,1);
+    rect->bottomRight->setCoords(m_Data->observationTime ,-1);
+}
+
+void Oscillogram::updateXSpectrogramAxes(QCPRange)
+{
+    m_Data->qPlotSpectrogram->xAxis->setRange(cPlot->xAxis->range());
+}
+
+
+void Oscillogram::onExportData()
+{
+    if (m_Data->isLiveView)
+    {
+        QMessageBox messageBox;
+        messageBox.critical(0,"Error","Could not export in Live Mode!");
+        return;
+    }
+
+    QString fname  = QFileDialog::getSaveFileName(this, "Save file", "", ".csv");
+    if ( !fname.isEmpty())
+    {
+        QFile f( fname );
+        f.open( QIODevice::WriteOnly );
+        QTextStream stream(&f);
+        for (int i=0; i<m_Data->data_length; i++)
+            stream << xData.at(i) << "," << yData.at(i) << endl;
+        f.close();
+    }
 }
 
 void Oscillogram::onMouseMove(QMouseEvent* event)
@@ -165,62 +172,4 @@ void Oscillogram::onMouseMove(QMouseEvent* event)
         else
             stillMove = false;
     }
-
-
-
 }
-
-
-
-void Oscillogram::updateRect()
-{
-    float windowsTime = m_Data->length_fft *1.0 / m_Data->fs;
-    rect->topLeft->setCoords(m_Data->observationTime- windowsTime ,1);
-    rect->bottomRight->setCoords(m_Data->observationTime ,-1);
-}
-
-
-
-
-
-//! ========= CHANGE AXES FUNCTIONS AND SLOTS
-//!
-//!
-
-void Oscillogram::onExportData()
-{   connect(m_qcfgraph,SIGNAL(exportData()), this, SLOT(onExportData()));
-
-    QMessageBox messageBox;
-
-    if (m_Data->isLiveView)
-    {
-        messageBox.critical(0,"Error","Could not export in Live Mode!");
-        return;
-    }
-
-
-    QString fname;
-    fname  = QFileDialog::getSaveFileName(this, "Save file", "", ".csv");
-
-    if ( !fname.isEmpty())
-    {
-        QFile f( fname );
-        f.open( QIODevice::WriteOnly );
-        QTextStream stream(&f);
-        for (int i=0; i<m_Data->data_length; i++)
-            stream << xData.at(i) << "," << yData.at(i) << endl;
-        f.close();
-    }
-}
-
-
-void Oscillogram::updateXSpectrogramAxes(QCPRange)
-{
-    m_Data->qPlotSpectrogram->xAxis->setRange(cPlot->xAxis->range());
-}
-
-
-/** =============================== **/
-/** =========== SLOTS ============= **/
-/** =============================== **/
-

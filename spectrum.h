@@ -20,7 +20,7 @@ public:
     void closeEvent( QCloseEvent* );
     ffft::FFTReal <float> *fft_object;
     QCustomPlot *cPlot, *cPlotAngle;
-    QVector<float> hann;
+    QVector<double> win;
 
 
     QVector<double> freqValues;

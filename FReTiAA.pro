@@ -58,7 +58,8 @@ SOURCES += main.cpp\
     datasharer.cpp \
     qfgraph.cpp \
     qcpitemtracerbars.cpp \
-    qcpitemtracercolormap.cpp
+    qcpitemtracercolormap.cpp \
+    windows.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot/qcustomplot.h \
@@ -100,7 +101,8 @@ HEADERS  += mainwindow.h \
     xyrangedialog.h \
     qfgraph.h \
     qcpitemtracerbars.h \
-    qcpitemtracercolormap.h
+    qcpitemtracercolormap.h \
+    windows.h
 
 RESOURCES += \
     ressources.qrc

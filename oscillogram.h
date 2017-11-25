@@ -18,7 +18,7 @@ public:
     QCustomPlot *cPlot;
     //float observationTime;
     void updateData(QVector<double>, QVector<double>);
-    QCustomPlot* graphViewer();
+
     void setYlabel(QString);
 
     QCPItemRect *rect;
@@ -53,13 +53,8 @@ signals:
     void updateTracer();
 public slots:
     void onMouseMove(QMouseEvent*);
-    //  void onCustomContextMenuRequested(QPoint);
-    //  void onXAxisResize();
-    //  void onYAxisResize();
     void onExportData();
-    //void onAxisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*);
     void updateXSpectrogramAxes(QCPRange);
-    // void onResetAxis();
 };
 
 #endif // OSCILLOGRAM_H

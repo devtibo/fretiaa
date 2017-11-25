@@ -41,6 +41,8 @@ Functionnalities:
 +       (Cepstrum)
 +       (Modulation Spectrum)
 +       Import/Open Wav Files
++       Spectrogram SPEECH MODE
++       KeyBoard ShortCut (Pause, Run, etc...)
 
 
 Code Improvements:
@@ -66,7 +68,7 @@ Code Improvements:
 +       Antialisaing ???
 [DONE]  Make proper heirtage using widget *parent=0 and :Qwidget(parent) in cpp file
 +       Replace following by a DCPGridLayout to use MarginGroup an align axesRect
-
++       Change mouse curor for trigger level move
 
 
                 ============
