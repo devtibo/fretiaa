@@ -44,9 +44,6 @@ OctaveSpectrum::OctaveSpectrum(DataSharer* data, QWidget*)
     // Set CentralWWidget
     this->setCentralWidget(m_qcfgraph);
 
-    // Connection
-    connect(this,SIGNAL(updateTracer()),m_qcfgraph,SLOT(updateTracerText()));// NOT VERY GOOD, Should be in QFGraph
-
     cPlot->replot();
 }
 
@@ -103,8 +100,6 @@ void OctaveSpectrum::setData(QVector<double> data,int idx_begin )
     // Update DATA
     newBars->setData(xData,rmsValuesVec); // NOT VERY GOOD SHOULD BE DONE USING SIGNAL/SLOT
 
-    // Update view
-    emit updateTracer();// NOT VERY GOOD, Should be in QFGraph
     cPlot->replot();
 }
 

@@ -65,7 +65,6 @@ Spectrum::Spectrum(DataSharer* data, QWidget*)
     c->setLayout(layout);
     this->setCentralWidget(c);
 
-    connect(this,SIGNAL(updateTracer()),m_qcfgraph,SLOT(updateTracerText())); // NOT VERY GOOD, Should be in QFGraph
 
 }
 
@@ -87,7 +86,8 @@ void Spectrum::setData(QVector<double> data,int idx_begin )
 
 
     for (int i=0; i<m_data->length_fft/2;i++){
-        freqValues.append(float((i*1.0)/m_data->length_fft * 1.0 *m_data->fs));
+        //freqValues.append(float((i*1.0)/m_data->length_fft * 1.0 *m_data->fs));
+        freqValues.append(i/(m_data->length_fft/2.0-1.0) * m_data->fs/2.0); // TO BE VERIFY
         fftValues.append(20.0*log10((sqrt(output_fft[i]*output_fft[i] +output_fft[i+m_data->length_fft/2]*output_fft[i+m_data->length_fft/2]))/m_data->length_fft/2.0e-5));
         angleValues.append( 2.0 * atan(output_fft[i+m_data->length_fft/2] / output_fft[i])); // Why multipled by 2 !!
     }
@@ -102,7 +102,6 @@ void Spectrum::setData(QVector<double> data,int idx_begin )
     cPlot->replot();
     cPlotAngle->replot();
 
-    emit updateTracer();// NOT VERY GOOD, Should be in QFGraph
 }
 
 

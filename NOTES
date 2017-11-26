@@ -47,9 +47,9 @@ Functionnalities:
 
 Code Improvements:
 ------------------
-+++ Main improvments +++
-+!!!!!! MULTITHREADING !!!!
++++ Main improvments :  MULTITHREADING !!!!
 .............................
++       More elegant solution than DataSharer Class
 [DONE]  Class Window
 [DONE]  Do a CLASS QFGraph (include DataTRacer, Zoom, etc ...)
 [DONE]  CLass AxisRangeDialog
@@ -59,18 +59,20 @@ Code Improvements:
 [DONE]  Properly managed XY Value Range for Spectrogram !!!!
 [DONE]  DownSampling for all plotters [OK for oscillogram/spectrum and angle; not able for bar plot and colormap]
 [DONE]  Make proper heirtage using widget *parent=0 and :Qwidget(parent) in cpp file
-+       emit signal To updateTracerText should be managed inside the QFGraph class.
+[DONE]  Emit signal To updateTracerText should be managed inside the QFGraph class.
 +       Use only on REPLOT in LiveView and one by modficcation in StopMode!!!
 +       UPDATE DATA in Widget using SLOTS and not function in MainWindow
 +       Use disconnect instead of global variable like in trigger in Actions managment
 +       Add multimeter to the Class QFGraph
-+       More elegant solution than DataSharer Class
-+       (Antialisaing ???)
 [DONE]  Change mouse curor for trigger level move
-
++       Choose a faster FFT algortihm than fftreal like FFTW3 !
 +++     Replace following by a DCPGridLayout to use MarginGroup an align axesRect
 
-[+++]   Trigger tkae various time to stop, normal because we are obliagte to watch half of rectangle because of number of data read (thus the point at the middle never correspond!) Look from end to begin of rectagnel to be more reactive. TO be correct te signal should be realign aftger trigger detection !!!
+[NOSOLUTION]   Trigger tkae various time to stop, normal because we are obliagte to watch half of rectangle because of number of data read (thus the point at the middle never correspond!) Look from end to begin of rectagnel to be more reactive. TO be correct te signal should be realign aftger trigger detection !!!
+
+
+
+
                 ============
                 === BUGS ===
                 ============
@@ -82,7 +84,7 @@ Code Improvements:
 [DONE]  Observation Time do not exactly correspond to the graph and to the rectangle !!!!
 [DONE]  Not able to apply 20 Hz HHP filter when application is in Pause !! => disavle button
 [DONE]  double Click on Spectrogram Axes place the dialog box on the Oscillogram plot !!!!!
-+       FFT size is NFFT/2 and not NFFT/2+1 ==> Fix frequency values!
+[DONE]  FFT size is NFFT/2 and not NFFT/2+1 ==> Fix frequency values!
 [DONE]  filter's gain not equal to one!
 [DONE]  axes not match when zoom on oscillogram or spectrogram in stop mode
 +       Last spectrogram values are not assign.  Confusion bewteen size of colormap and size of Spectrogram : set antilaising and interpolation FALSE to properly observe the phenomenum

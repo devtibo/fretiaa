@@ -60,7 +60,6 @@ Spectrogram::Spectrogram(DataSharer* data, QWidget*)
     connect(m_qcfgraph,SIGNAL(exportData()), this, SLOT(onExportData()));
 
     /* Conections */
-    connect(this,SIGNAL(updateTracer()),m_qcfgraph,SLOT(updateTracerText())); // NOT VERY GOOD, Should be in QFGraph
     connect(cPlot->xAxis,SIGNAL(rangeChanged(QCPRange)),this,SLOT(updateXSpectrogramAxes(QCPRange)));
 
 
@@ -92,7 +91,6 @@ void Spectrogram::update(QVector<double> data)
         idx++;
     }
 
-    emit updateTracer();
     cPlot->replot();
 }
 

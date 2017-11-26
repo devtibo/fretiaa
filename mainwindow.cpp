@@ -422,27 +422,16 @@ void MainWindow::data2Read(void)
 
     /** Soit je copie tous soit je décale le buffer du graph pour le remplir par la lecture **/
     if (oldPoints_y.count() < range) { // Ici pour remplir au fur et a mesure
-
-        qDebug("%d + %d = %d ", oldPoints_y.count(),maxSize/resolution, oldPoints_y.count()+maxSize/resolution);
         points_x = oldPoints_x;//osc->m_series->points();
         points_y = oldPoints_y;//osc->m_series->points();*
-
 
         if (oldPoints_y.count() + maxSize/resolution >= range)
         {
             // décalage à guache du reste puis  suppression de "rest" elemnets
             int  rest = (oldPoints_y.count() + maxSize/resolution) - range;
-
             points_x.remove(0,rest-1);
             points_y.remove(0,rest-1);
-            /*           for (int i = rest; i < oldPoints_y.count(); i++){
-               points_x.append((i - rest)/m_AudioEngine->getFs());
-               points_y.append( oldPoints_y.at(i));
-           }*/
         }
-
-
-
     } else { // ici en fonctionnement nominal et décaalge
         for (int i = maxSize/resolution; i < oldPoints_y.count(); i++){
             points_x.append((i - maxSize/resolution)/m_AudioEngine->getFs());

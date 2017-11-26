@@ -52,7 +52,7 @@ protected:
 signals:
 
     void update(void);
-    void updateTracer();
+
 public slots:
     void onMouseMove(QMouseEvent*);
     void onExportData();

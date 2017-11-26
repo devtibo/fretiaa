@@ -30,7 +30,7 @@ public:
 
 signals:
     void spectrumIsClosing();
-    void updateTracer();
+
 public slots:
     void onExportData();
 };

@@ -37,7 +37,6 @@ Oscillogram::Oscillogram(DataSharer *data, QWidget* parent):
     /* Add plot to QCFGRaph*/
     m_qcfgraph = new QFGraph(cPlot,cPlot->graph(0));
     m_qcfgraph->setDefaultXYRange(QCPRange(0,m_Data->observationTime), QCPRange(-1,1));
-    connect(this,SIGNAL(updateTracer()),m_qcfgraph,SLOT(updateTracerText())); // NOT VERY GOOD, Should be in QFGraph
     connect(m_qcfgraph,SIGNAL(exportData()), this, SLOT(onExportData()));
 
     /* connections*/
@@ -55,7 +54,6 @@ void Oscillogram::updateData(QVector<double> x, QVector<double> y)
     cPlot->graph(0)->setData(x,y);
     cPlot->replot();
 
-    emit updateTracer(); // NOT VERY GOOD, Should be in QFGraph
 }
 
 /** =============================== **/

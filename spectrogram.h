@@ -31,7 +31,6 @@ public slots:
     void onExportData();
 
 signals:
-    void updateTracer();
 };
 
 #endif // SPECTROGRAM_H

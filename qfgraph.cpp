@@ -110,6 +110,9 @@ void QFGraph::init(QCustomPlot *m_cPlot)
     cPlot->setInteractions(QCP::iSelectAxes);
     connect(cPlot,SIGNAL(axisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)),this,SLOT(onAxisDoubleClick(QCPAxis*,QCPAxis::SelectablePart,QMouseEvent*)));
 
+
+    connect(cPlot,SIGNAL(beforeReplot()),this,SLOT(updateTracerText()));
+
     layout = new QGridLayout;
     layout->addWidget(m_toolBar);
     layout->addWidget(cPlot);
@@ -365,6 +368,8 @@ void QFGraph::onMousePress(QMouseEvent* event)
 
 void QFGraph::updateTracerText()
 {
+
+
     if(isXYValueMode)
     {
         switch (graphTypes)

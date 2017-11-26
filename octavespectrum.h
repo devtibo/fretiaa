@@ -26,7 +26,7 @@ public:
     QVector<QString> labels;
 signals:
     void octaveIsClosing();
-    void updateTracer();
+
 public slots:
     void onExportData();
 };
