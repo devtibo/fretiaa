@@ -12,6 +12,8 @@ class Oscillogram : public QWidget
 {
     Q_OBJECT
 public:
+
+    QWidget *m_parent;
     //explicit Oscillogram(QWidget *parent = 0);
     Oscillogram( DataSharer*,QWidget *parent=0);
     ///![] Oscillogram

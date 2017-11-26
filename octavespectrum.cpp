@@ -47,6 +47,7 @@ OctaveSpectrum::OctaveSpectrum(DataSharer* data, QWidget*)
     // Connection
     connect(this,SIGNAL(updateTracer()),m_qcfgraph,SLOT(updateTracerText()));// NOT VERY GOOD, Should be in QFGraph
 
+    cPlot->replot();
 }
 
 

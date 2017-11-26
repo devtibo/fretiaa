@@ -1,8 +1,11 @@
 #include "oscillogram.h"
 #include "xyrangedialog.h"
 
-Oscillogram::Oscillogram(DataSharer *data, QWidget*)
+Oscillogram::Oscillogram(DataSharer *data, QWidget* parent):
+    QWidget(parent)
 {
+
+    m_parent = parent;
     m_Data = data;
 
     /* Create Graphic*/
@@ -58,7 +61,6 @@ void Oscillogram::updateData(QVector<double> x, QVector<double> y)
 /** =============================== **/
 /** ======= SETTERS/GETTERS ======= **/
 /** =============================== **/
-
 void Oscillogram::setYlabel(QString str)
 {
     cPlot->yAxis->setLabel(str);
@@ -78,6 +80,7 @@ void Oscillogram::updateRect()
 void Oscillogram::updateXSpectrogramAxes(QCPRange)
 {
     m_Data->qPlotSpectrogram->xAxis->setRange(cPlot->xAxis->range());
+    m_Data->qPlotSpectrogram->replot();
 }
 
 
@@ -155,7 +158,19 @@ void Oscillogram::onMouseMove(QMouseEvent* event)
 
     if (m_Data->isTrigger)
     {
+        // HERE CHANGE MOUSE CURSOR!!!
+
         double sel;
+
+        /* Change Mouse cursor*/
+        sel=triggerLine->selectTest(event->pos(),false,0);
+        if (sel <= cPlot->selectionTolerance())
+             m_parent->setCursor(Qt::SizeVerCursor);
+        else
+            m_parent->setCursor(Qt::ArrowCursor);
+
+
+
         if(event->buttons() == Qt::MouseButton::LeftButton) // if left mouse button pressed
         {
             sel=triggerLine->selectTest(event->pos(),false,0);

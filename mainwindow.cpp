@@ -172,7 +172,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //![] Oscilloscope
     //! --------------
-    cPlotOscillogram = new Oscillogram(data);
+    cPlotOscillogram = new Oscillogram(data,this);
     data->qPlotOscillogram = cPlotOscillogram->cPlot;
     cPlotOscillogram->updateRect();
     connect(actionExportOsc,SIGNAL(triggered()), cPlotOscillogram,SLOT(onExportData()));
@@ -293,6 +293,7 @@ void MainWindow::exitApp()
     this->close();
     cPlotSpectrum->close();
     cPlotOctaveSpectrum->close();
+    m_AudioEngine->m_AudioInput->stop();
 }
 
 
@@ -399,7 +400,8 @@ void MainWindow::data2Read(void)
 {
     //![] Read Buffer
     //!---------------
-    qint64 range = round(data->observationTime * m_AudioEngine->getFs()); // NEED TO BE GREATER THAN BUFFER SIZE
+    qint64 range = round(data->observationTime * m_AudioEngine->getFs()) + 1 / m_AudioEngine->getFs(); // NEED TO BE GREATER THAN BUFFER SIZE
+    //+1/Fs to go from 0 to observation time!!
 
     if (range < m_AudioEngine->soundBufferSize)
     {        qDebug("ERROR range");
@@ -414,14 +416,32 @@ void MainWindow::data2Read(void)
 
     // Fill the vector to Draw which is greater or equal to the input buffer size (i.e. range >= SOUND_BUFFER_SIZE)
     qint64 maxSize = m_AudioEngine->m_InputDevice->read((char*)dataSound, m_AudioEngine->soundBufferSize);
-    dataCounter += maxSize/resolution;
+    //dataCounter += maxSize/resolution;
     qint16 *ptr = reinterpret_cast<qint16*>(dataSound);
     // qDebug("Available Data : %d", maxSize/resolution);
 
     /** Soit je copie tous soit je décale le buffer du graph pour le remplir par la lecture **/
-    if (oldPoints_y.count() < (range)) { // Ici pour remplir au fur et a mesure
+    if (oldPoints_y.count() < range) { // Ici pour remplir au fur et a mesure
+
+        qDebug("%d + %d = %d ", oldPoints_y.count(),maxSize/resolution, oldPoints_y.count()+maxSize/resolution);
         points_x = oldPoints_x;//osc->m_series->points();
-        points_y = oldPoints_y;//osc->m_series->points();
+        points_y = oldPoints_y;//osc->m_series->points();*
+
+
+        if (oldPoints_y.count() + maxSize/resolution >= range)
+        {
+            // décalage à guache du reste puis  suppression de "rest" elemnets
+            int  rest = (oldPoints_y.count() + maxSize/resolution) - range;
+
+            points_x.remove(0,rest-1);
+            points_y.remove(0,rest-1);
+            /*           for (int i = rest; i < oldPoints_y.count(); i++){
+               points_x.append((i - rest)/m_AudioEngine->getFs());
+               points_y.append( oldPoints_y.at(i));
+           }*/
+        }
+
+
 
     } else { // ici en fonctionnement nominal et décaalge
         for (int i = maxSize/resolution; i < oldPoints_y.count(); i++){
@@ -429,6 +449,7 @@ void MainWindow::data2Read(void)
             points_y.append( oldPoints_y.at(i));
         }
     }
+
 
     // Remplir par laz lecture
     qint64 size = points_y.count();
@@ -456,6 +477,7 @@ void MainWindow::data2Read(void)
     if ( qMax(length_fft,data->length_fft_spectrogram)> points_y.size()) // TOTO: The right rules is this on AND  to skeep only if less than "length_fft" points are read
         return;
     else
+
         emit dataAvalaible();
 
     /* Wait until data are in analysis rectangle before send to plotters(spectrogrum, dbmeter, etc...) */
@@ -464,6 +486,8 @@ void MainWindow::data2Read(void)
     else
     {;//Make connections to all plotters}
     }
+
+    qDebug("%d",points_x.size());
 }
 
 
@@ -593,7 +617,7 @@ void MainWindow::onTriggerChanged(bool isChecked)
     if (isChecked)
     {
         connect(this,SIGNAL(dataAvalaible()),this, SLOT(updateTriggered()));
-        //connect(cPlotOscillogram->graphViewer(),SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
+
         connect(cPlotOscillogram->cPlot,SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
         cPlotOscillogram->triggerLine->setVisible(true);
     }else
@@ -601,6 +625,8 @@ void MainWindow::onTriggerChanged(bool isChecked)
         disconnect(this,SIGNAL(dataAvalaible()),this, SLOT(updateTriggered()));
         disconnect(cPlotOscillogram->cPlot,SIGNAL(mouseMove(QMouseEvent*)), cPlotOscillogram, SLOT(onMouseMove(QMouseEvent*)));
         cPlotOscillogram->triggerLine->setVisible(false);
+
+        this->setCursor(Qt::ArrowCursor);
     }
 }
 
@@ -640,14 +666,18 @@ void MainWindow::onMoveAnalyseRect(bool checked)
 
 void MainWindow::updateTriggered()
 {
+
+
     interactionMoveAnalyseRect->setChecked(false);
     interactionTrigger->setChecked(true);
     if ( data->idx_begin > (points_y.size()- data->length_fft) )
         return;
-
-    for (int i=  data->idx_begin ; i< data->idx_begin + length_fft/2 ; i++)
-        if (points_y.at(i ) >= cPlotOscillogram->triggerLevel)
+    qDebug("RERE");
+    //for (int i=  data->idx_begin ; i< data->idx_begin + length_fft ; i++)
+    for (int i=  data->idx_begin + length_fft -1  ; i>=data->idx_begin ; i--)
+        if (points_y.at(i) >= cPlotOscillogram->triggerLevel)
         {
+            m_AudioEngine->m_AudioInput->suspend();
             liveView->setChecked(false);
             interactionTrigger->setChecked(false);
         }

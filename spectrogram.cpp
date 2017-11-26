@@ -105,6 +105,7 @@ void Spectrogram::update(QVector<double> data)
 void Spectrogram::updateXSpectrogramAxes(QCPRange)
 {
     m_data->qPlotOscillogram->xAxis->setRange(cPlot->xAxis->range());
+    m_data->qPlotOscillogram->replot();
 }
 
 

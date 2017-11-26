@@ -80,7 +80,7 @@ private :
     //![] Spectrum
     Spectrum *cPlotSpectrum;
     bool isSpectrum;
-    qint64 dataCounter;
+   // qint64 dataCounter;
 
     //![] Spectrogram
     Spectrogram *cPlotSpectrogram;
