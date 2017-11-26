@@ -42,7 +42,7 @@ Functionnalities:
 +       (Modulation Spectrum)
 +       Import/Open Wav Files
 +       Spectrogram SPEECH MODE
-+       KeyBoard ShortCut (Pause, Run, etc...)
+[DONE]  KeyBoard ShortCut (Pause, Run, etc...)
 
 
 Code Improvements:
@@ -94,3 +94,4 @@ Code Improvements:
 [DONE]  XY on octave spectrum cause critical CRASH
 +       XY value using arrow pad not work when more than one is used
 +       Spectrogram XY f-value not correct : no zero-frequency !
++       data only update when signal arise to observatio timle

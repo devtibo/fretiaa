@@ -22,8 +22,11 @@ Oscillogram::Oscillogram(DataSharer *data, QWidget* parent):
     rect = new QCPItemRect(cPlot);
     rect->setBrush(QBrush(QColor(0,0,255,70) ));
     rect->setSelectable(false);
-    rect->topLeft->setCoords(m_Data->observationTime-(m_Data->length_fft/m_Data->fs) ,1);
-    rect->bottomRight->setCoords(m_Data->observationTime ,-1);
+
+    rect->topLeft->setCoords(m_Data->observationTime/2-(m_Data->length_fft/m_Data->fs)/2 ,1);
+    rect->bottomRight->setCoords(m_Data->observationTime/2 +(m_Data->length_fft/m_Data->fs)/2  ,-1);
+    m_Data->t_begin =  m_Data->observationTime/2-(m_Data->length_fft/m_Data->fs)/2;
+    m_Data->idx_begin = round(m_Data->t_begin * m_Data->fs);
 
     /* Trigger */
     triggerLine = new QCPItemLine(cPlot);
@@ -68,13 +71,6 @@ void Oscillogram::setYlabel(QString str)
 /** =============================== **/
 /** =========== SLOTS ============= **/
 /** =============================== **/
-void Oscillogram::updateRect()
-{
-    float windowsTime = m_Data->length_fft *1.0 / m_Data->fs;
-    rect->topLeft->setCoords(m_Data->observationTime- windowsTime ,1);
-    rect->bottomRight->setCoords(m_Data->observationTime ,-1);
-}
-
 void Oscillogram::updateXSpectrogramAxes(QCPRange)
 {
     m_Data->qPlotSpectrogram->xAxis->setRange(cPlot->xAxis->range());
@@ -150,7 +146,7 @@ void Oscillogram::onMouseMove(QMouseEvent* event)
         m_Data->idx_begin = round(m_Data->t_begin * m_Data->fs);
 
         cPlot->replot(); //only necessaary if live view is off
-        emit update();
+        emit update(); // Signal to update other grapg using rectangle (levelMeter, spectrum, octave)
     }
 
 
@@ -163,7 +159,7 @@ void Oscillogram::onMouseMove(QMouseEvent* event)
         /* Change Mouse cursor*/
         sel=triggerLine->selectTest(event->pos(),false,0);
         if (sel <= cPlot->selectionTolerance())
-             m_parent->setCursor(Qt::SizeVerCursor);
+            m_parent->setCursor(Qt::SizeVerCursor);
         else
             m_parent->setCursor(Qt::ArrowCursor);
 

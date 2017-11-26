@@ -30,7 +30,7 @@ public:
 
     DataSharer *m_Data = new DataSharer;
 
-    void updateRect();
+
 
     //QPoint contextPos;
     //void resizeAxisDialog(QCPAxis *, QPoint);

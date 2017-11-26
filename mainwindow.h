@@ -58,7 +58,7 @@ private :
     ClickableLabel *lab_SoundCardInfo;
     ClickableLabel *lab_GainInfo ;
 
-     //![] Mulitmeter
+    //![] Mulitmeter
     MultiMeter *multiMeterSpec;
 
     //![] Main Layout
@@ -80,7 +80,7 @@ private :
     //![] Spectrum
     Spectrum *cPlotSpectrum;
     bool isSpectrum;
-   // qint64 dataCounter;
+    // qint64 dataCounter;
 
     //![] Spectrogram
     Spectrogram *cPlotSpectrogram;
@@ -121,6 +121,14 @@ public slots:
     void updatedBMeter();
     void updateSpectrogram();
 
+    // ShortCuts
+    void onKeySpacePress();
+    void onKeyTPress();
+    void onKeyRPress();
+    void onKeySPress();
+    void onKeyOPress();
+    void onKeyHPress();
+    void onKeyGPress();
 
     // DialogBox
     void openAudioConfigDialog();

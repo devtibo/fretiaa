@@ -100,31 +100,31 @@ MainWindow::MainWindow(QWidget *parent)
     bar_toolbar->setIconSize(QSize(40,40));
     liveView = new QAction;
     liveView->setIcon(QIcon(":/icons/liveViewOnColoredOff.png"));
-    liveView->setText("LiveView");
+    liveView->setText("LiveView [SPACE BAR]");
     liveView->setCheckable(true);
     liveView->setChecked(true);
 
     plotSpectro = new QAction;
-    plotSpectro->setText("Spectrogram");
+    plotSpectro->setText("Spectrogram [G]");
     plotSpectro->setIcon(QIcon(":/icons/iconSpectro.png"));
     plotSpectro->setCheckable(true);
     plotSpectro->setChecked(true);
 
     plotSpectrum = new QAction;
-    plotSpectrum->setText("Spectrum");
+    plotSpectrum->setText("Spectrum [S]");
     plotSpectrum->setIcon(QIcon(":/icons/iconFFT.png"));
     plotSpectrum->setCheckable(true);
     plotSpectrum->setChecked(false);
 
     plotOctaveSpectrum = new QAction;
-    plotOctaveSpectrum->setText("Octave Spectrum");
+    plotOctaveSpectrum->setText("Octave Spectrum [O]");
     plotOctaveSpectrum->setIcon(QIcon(":/icons/iconOctave.png"));
     plotOctaveSpectrum->setCheckable(true);
     plotOctaveSpectrum->setChecked(false);
 
 
     interactionTrigger = new QAction;
-    interactionTrigger->setText("Trigger");
+    interactionTrigger->setText("Trigger [T]");
     interactionTrigger->setIcon(QIcon(":/icons/iconTrigger.png"));
     interactionTrigger->setCheckable(true);
     interactionTrigger->setChecked(false);
@@ -142,13 +142,13 @@ MainWindow::MainWindow(QWidget *parent)
     bar_toolbar->addAction(plotOctaveSpectrum);
 
     interactionMoveAnalyseRect = new QAction;
-    interactionMoveAnalyseRect->setText("Moce Selection Rectangle");
+    interactionMoveAnalyseRect->setText("Moce Selection Rectangle [R]");
     interactionMoveAnalyseRect->setIcon(QIcon(":/icons/iconMoceRect.png"));
     interactionMoveAnalyseRect->setCheckable(true);
     interactionMoveAnalyseRect->setChecked(false);
 
     interactionHP = new QAction;
-    interactionHP->setText("20Hz  HP filter");
+    interactionHP->setText("20Hz  HP filter [H]");
     interactionHP->setIcon(QIcon(":/icons/iconHP.png"));
     interactionHP->setCheckable(true);
     interactionHP->setChecked(false);
@@ -174,7 +174,6 @@ MainWindow::MainWindow(QWidget *parent)
     //! --------------
     cPlotOscillogram = new Oscillogram(data,this);
     data->qPlotOscillogram = cPlotOscillogram->cPlot;
-    cPlotOscillogram->updateRect();
     connect(actionExportOsc,SIGNAL(triggered()), cPlotOscillogram,SLOT(onExportData()));
 
     //!--------------------------------------------------------------------
@@ -265,7 +264,35 @@ MainWindow::MainWindow(QWidget *parent)
     //!--------------------------------------------------------------------
 
 
+    //![] SHORTCUTS
+    //! -----------
+    QShortcut *sCSpace = new QShortcut(this);
+    sCSpace->setKey( Qt::Key_Space);
+    connect(sCSpace, SIGNAL(activated()), this, SLOT(onKeySpacePress()));
 
+    QShortcut *sCKeyT = new QShortcut(this);
+    sCKeyT->setKey( Qt::Key_T);
+    connect(sCKeyT, SIGNAL(activated()), this, SLOT(onKeyTPress()));
+
+    QShortcut *sCKeyR = new QShortcut(this);
+    sCKeyR->setKey( Qt::Key_R);
+    connect(sCKeyR, SIGNAL(activated()), this, SLOT(onKeyRPress()));
+
+    QShortcut *sCKeyS = new QShortcut(this);
+    sCKeyS->setKey( Qt::Key_S);
+    connect(sCKeyS, SIGNAL(activated()), this, SLOT(onKeySPress()));
+
+    QShortcut *sCKeyO = new QShortcut(this);
+    sCKeyO->setKey( Qt::Key_O);
+    connect(sCKeyO, SIGNAL(activated()), this, SLOT(onKeyOPress()));
+
+    QShortcut *sCKeyH = new QShortcut(this);
+    sCKeyH->setKey( Qt::Key_H);
+    connect(sCKeyH, SIGNAL(activated()), this, SLOT(onKeyHPress()));
+
+    QShortcut *sCKeyG = new QShortcut(this);
+    sCKeyG->setKey( Qt::Key_G);
+    connect(sCKeyG, SIGNAL(activated()), this, SLOT(onKeyGPress()));
 
     //![] TODO CHANGED THIS !!!!!!!!!!
     //! --------------------
@@ -629,6 +656,44 @@ void MainWindow::spectrumIsClosingCatch()
 }
 
 
+void MainWindow::onKeySpacePress()
+{
+
+    liveView->setChecked(!liveView->isChecked());
+
+}
+
+void MainWindow::onKeyTPress()
+{
+    interactionTrigger->setChecked(!interactionTrigger->isChecked());
+}
+
+void MainWindow::onKeyRPress()
+{
+    interactionMoveAnalyseRect->setChecked(!interactionMoveAnalyseRect->isChecked());
+}
+
+
+void MainWindow::onKeySPress()
+{
+    plotSpectrum->setChecked(!plotSpectrum->isChecked());
+}
+
+void MainWindow::onKeyOPress()
+{
+    plotOctaveSpectrum->setChecked(!plotOctaveSpectrum->isChecked());
+}
+
+void MainWindow::onKeyHPress()
+{
+    interactionHP->setChecked(!interactionHP->isChecked());
+}
+
+
+void MainWindow::onKeyGPress()
+{
+    plotSpectro->setChecked(!plotSpectro->isChecked());
+}
 //! -*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 //!           SLOTS, Oscilloscope interaction
 //! -*-*-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -670,6 +735,8 @@ void MainWindow::updateTriggered()
             interactionTrigger->setChecked(false);
         }
 }
+
+
 
 //! -*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 //!           SLOTS, UPDATES TO REPLACE WITHOUT SIGNAL/SLOT
