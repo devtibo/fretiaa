@@ -250,6 +250,12 @@ void QFGraph::onInteractionXYPoints(bool isChecked)
         sCArrowsR = new QShortcut(this);
         sCArrowsR->setKey(Qt::Key_Right);
         connect(sCArrowsR, SIGNAL(activated()),this, SLOT(onKeyRPress()));
+        sCArrowsUP = new QShortcut(this);
+        sCArrowsUP->setKey(Qt::Key_Up);
+        connect(sCArrowsUP, SIGNAL(activated()),this, SLOT(onKeyUPPress()));
+        sCArrowsDOWN = new QShortcut(this);
+        sCArrowsDOWN->setKey(Qt::Key_Down);
+        connect(sCArrowsDOWN, SIGNAL(activated()),this, SLOT(onKeyDOWNPress()));
 
 
         xValues.clear();
@@ -302,14 +308,28 @@ void QFGraph::onInteractionXYPoints(bool isChecked)
             double  lastKey;
             lastKey = mColorMap->data()->keyRange().upper;
 
+
+            double firstValue;
+            firstValue = mColorMap->data()->valueRange().lower;
+            double  lastValue;
+            lastValue = mColorMap->data()->valueRange().upper;
+
             for (int j=0; j<mColorMap->data()->keySize();j++)
             {
-                xValues.append((1.0*j)/(mColorMap->data()->keySize()-1) * (lastKey-firstKey) + firstKey);
+                xValues.append((1.0*j)/(mColorMap->data()->keySize()) * (lastKey-firstKey) + firstKey);
+            }
+
+            for (int j=0; j<mColorMap->data()->valueSize();j++)
+            {
+                yValues.append((1.0*j)/(mColorMap->data()->valueSize()) * (lastValue-firstValue) + firstValue);
             }
             break;
         }
 
-        SetTracerAt(xValues.at(round(xValues.size()/2)));
+        if(graphTypes ==3)
+            SetTracerAt(xValues.at(round(xValues.size()/2)), yValues.at(round(yValues.size()/2)));
+        else
+            SetTracerAt(xValues.at(round(xValues.size()/2)));
     }
     else
     {
@@ -317,6 +337,8 @@ void QFGraph::onInteractionXYPoints(bool isChecked)
         disconnect(cPlot, SIGNAL(mousePress(QMouseEvent*)), this, SLOT(onMousePress(QMouseEvent*)));
         disconnect(sCArrowsL, SIGNAL(activated()), this, SLOT(onKeyLPress()));
         disconnect(sCArrowsR, SIGNAL(activated()), this, SLOT(onKeyRPress()));
+        disconnect(sCArrowsUP, SIGNAL(activated()), this, SLOT(onKeyUPPress()));
+        disconnect(sCArrowsDOWN, SIGNAL(activated()), this, SLOT(onKeyDOWNPress()));
 
         switch (graphTypes)
         {
@@ -336,6 +358,8 @@ void QFGraph::onInteractionXYPoints(bool isChecked)
         delete phaseTracerText;
         delete sCArrowsL;
         delete sCArrowsR;
+        delete sCArrowsUP;
+        delete sCArrowsDOWN;
 
         //phaseTracerText->setVisible(false);
         cPlot->replot();
@@ -359,6 +383,7 @@ void QFGraph::onMousePress(QMouseEvent* event)
             SetTracerAt(x);
             break;
         case 3:
+
             mColorMap->pixelsToCoords(event->pos().x(),event->pos().y(),x,y); // get mouse cursor
             SetTracerAt(x,y);
             break;
@@ -368,8 +393,6 @@ void QFGraph::onMousePress(QMouseEvent* event)
 
 void QFGraph::updateTracerText()
 {
-
-
     if(isXYValueMode)
     {
         switch (graphTypes)
@@ -384,8 +407,6 @@ void QFGraph::updateTracerText()
             phaseTracerText->setText(QString("(time: %1, freq: %2, Mag: %3)").arg(phaseTracerColorMap->position->key()).arg(phaseTracerColorMap->position->value()).arg(graphDataColorMap->data(phaseTracerColorMap->position->key(),phaseTracerColorMap->position->value())));
             break;
         }
-
-
         cPlot->replot(); // TODO : Only if not LiveView !!!!
     }
 }
@@ -400,15 +421,26 @@ void QFGraph::onKeyLPress()
         break;
     case 2:
         idx=xValues.indexOf(phaseTracerBars->position->key());
+        break;
     case 3:
-        //   idx=xValues.indexOf(phaseTracerColorMap->position->key());
+        idx=xValues.indexOf(phaseTracerColorMap->position->key());
         break;
     }
 
     //qDebug("%d", idx);
     if ((idx-1) < 1) //FIXME: Why is not ZERO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         idx =1;//FIXME: Why is not ZERO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    SetTracerAt(xValues.at(idx-1));
+    // SetTracerAt(xValues.at(idx-1));
+
+    /*
+    for (int i=0; i< xValues.size();i++)
+         qDebug("*%f",xValues.at(i));
+    qDebug("%f %f",phaseTracerColorMap->position->key(),xValues.at(idx));
+*/
+    if(graphTypes ==3)
+        SetTracerAt(xValues.at(idx-1),phaseTracerColorMap->position->value());
+    else
+        SetTracerAt(xValues.at(idx-1));
 }
 
 void QFGraph::onKeyRPress()
@@ -423,13 +455,45 @@ void QFGraph::onKeyRPress()
         idx=xValues.indexOf(phaseTracerBars->position->key());
         break;
     case 3:
-        // idx=xValues.indexOf(phaseTracerColorMap->position->key());
+        idx=xValues.indexOf(phaseTracerColorMap->position->key());
         break;
     }
     //qDebug("%d", idx);
     if ((idx+1) > xValues.size()-2) //FIXME: Why is not freqValues.size()-1 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         idx =xValues.size()-2;//FIXME: Why is not freqValues.size()-1 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    SetTracerAt(xValues.at(idx+1));
+    if(graphTypes ==3)
+        SetTracerAt(xValues.at(idx+1),phaseTracerColorMap->position->value());
+    else
+        SetTracerAt(xValues.at(idx+1));
+}
+
+void QFGraph::onKeyDOWNPress()
+{
+    int idx;
+    if(graphTypes==3)
+        idx = yValues.indexOf(phaseTracerColorMap->position->value());
+
+    //qDebug("%d", idx);
+
+    if ((idx-1) < 1) //FIXME: Why is not ZERO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        idx =1;//FIXME: Why is not ZERO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    SetTracerAt(phaseTracerColorMap->position->key(),yValues.at(idx-1));
+
+}
+
+void QFGraph::onKeyUPPress()
+{
+    int idx;
+    if(graphTypes==3)
+        idx = yValues.indexOf(phaseTracerColorMap->position->value());
+
+    //qDebug("%d", idx);
+    if ((idx+1) > yValues.size()-2) //FIXME: Why is not freqValues.size()-1 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        idx =yValues.size()-2;//FIXME: Why is not freqValues.size()-1 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    SetTracerAt(phaseTracerColorMap->position->key(),yValues.at(idx+1));
+
 }
 
 void QFGraph::SetTracerAt(double x)
@@ -438,19 +502,19 @@ void QFGraph::SetTracerAt(double x)
     {
     case 1 :
         phaseTracer->setGraphKey(x);
-        phaseTracer->updatePosition(); // unstead what the position values are not correct
+        phaseTracer->updatePosition(); // else what the position values are not correct
         phaseTracerText->setText(QString("(freq: %1, Mag: %2)").arg(phaseTracer->position->key()).arg(phaseTracer->position->value()));
         break;
     case 2:
         phaseTracerBars->setGraphKey(x);
-        phaseTracerBars->updatePosition(); // unstead what the position values are not correct
+        phaseTracerBars->updatePosition(); // else what the position values are not correct
         phaseTracerText->setText(QString("(freq: %1, Mag: %2)").arg(phaseTracerBars->position->key()).arg(phaseTracerBars->position->value()));
         break;
-    case 3:
-        phaseTracerColorMap->setGraphKey(x);
-        phaseTracerColorMap->updatePosition(); // unstead what the position values are not correct
+        /* case 3:
+       /* phaseTracerColorMap->setGraphKey(x);
+        phaseTracerColorMap->updatePosition(); // else what the position values are not correct
         phaseTracerText->setText(QString("(time: %1, freq: %2, Mag: %3)").arg(phaseTracerColorMap->position->key()).arg(phaseTracerColorMap->position->value()).arg(graphDataColorMap->data(phaseTracerColorMap->position->key(),phaseTracerColorMap->position->value())));
-        break;
+        break;*/
     }
 
 
@@ -460,14 +524,16 @@ void QFGraph::SetTracerAt(double x)
 
 void QFGraph::SetTracerAt(double x, double y)
 {
-    switch (graphTypes)
+    if (graphTypes==3)
     {
-    case 3:
+
         phaseTracerColorMap->setGraphKey(x);
         phaseTracerColorMap->setGraphValue(y);
-        phaseTracerColorMap->updatePosition(); // unstead what the position values are not correct
+        phaseTracerColorMap->updatePosition(); // else what the position values are not correct
         phaseTracerText->setText(QString("(time: %1, freq: %2, Mag: %3)").arg(phaseTracerColorMap->position->key()).arg(phaseTracerColorMap->position->value()).arg(graphDataColorMap->data(phaseTracerColorMap->position->key(),phaseTracerColorMap->position->value())));
-        break;
+
+        qDebug("%f",phaseTracerColorMap->position->key());
+
     }
 
 

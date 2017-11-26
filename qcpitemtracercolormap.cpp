@@ -331,10 +331,10 @@ void QCPItemTracerColorMap::updatePosition()
                     itValue = 0;
                     for (int j=0; j<mColorMap->data()->valueSize();j++)
                     {
-                        double mkey = (1.0*j)/(sizeValue-1) * (lastValue-firstValue) + firstValue;
-                        if (mkey == mGraphValue)
+                        double mValue = (1.0*j)/(sizeValue-1) * (lastValue-firstValue) + firstValue;
+                        if (mValue == mGraphValue)
                             itValue = j;
-                        else if(mkey>mGraphValue)
+                        else if(mValue>mGraphValue)
                         {itValue = j; break;}
                     }
 

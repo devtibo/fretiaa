@@ -39,6 +39,8 @@ private :
     QCPItemText *phaseTracerText ;
     QShortcut *sCArrowsL ;
     QShortcut *sCArrowsR;
+    QShortcut *sCArrowsUP;
+    QShortcut *sCArrowsDOWN;
     void SetTracerAt(double);
     void SetTracerAt(double x, double y);
     bool isToolBarVisible=true;
@@ -54,6 +56,7 @@ private :
     int graphTypes;
 private :
     QVector<double> xValues;
+    QVector<double> yValues;
     int isXYValueMode = false;
 signals:
     void exportData();
@@ -77,6 +80,8 @@ private slots:
     void onMousePress(QMouseEvent*);
     void onKeyLPress();
     void onKeyRPress();
+    void onKeyUPPress();
+    void onKeyDOWNPress();
     void updateTracerText();
 
 };

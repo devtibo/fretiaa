@@ -476,7 +476,6 @@ void MainWindow::data2Read(void)
     {;//Make connections to all plotters}
     }
 
-    qDebug("%d",points_x.size());
 }
 
 

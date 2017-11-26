@@ -36,7 +36,7 @@ Functionnalities:
 +       Resizable rectangle selection
 [DONE]  Plot ineraction to display values + BUGS !!!
 +       Zoom Action using CTRL on mouse wheel
-+       Arrows Action for XY value in spectrogram L-R-UP-DOWN
+[DONE]  Arrows Action for XY value in spectrogram L-R-UP-DOWN
 +       superimpose Plot Intensity along all acsuiqition
 +       (Cepstrum)
 +       (Modulation Spectrum)
@@ -66,6 +66,7 @@ Code Improvements:
 +       Add multimeter to the Class QFGraph
 [DONE]  Change mouse curor for trigger level move
 +       Choose a faster FFT algortihm than fftreal like FFTW3 !
++       double click on selected reactangle to move it
 +++     Replace following by a DCPGridLayout to use MarginGroup an align axesRect
 
 [NOSOLUTION]   Trigger tkae various time to stop, normal because we are obliagte to watch half of rectangle because of number of data read (thus the point at the middle never correspond!) Look from end to begin of rectagnel to be more reactive. TO be correct te signal should be realign aftger trigger detection !!!
@@ -91,3 +92,5 @@ Code Improvements:
 [DONE]  App Crash when disble XY value on spectrogram!!!!
 [DONE]  ToolBar stays when disable spectrogram graph !
 [DONE]  XY on octave spectrum cause critical CRASH
++       XY value using arrow pad not work when more than one is used
++       Spectrogram XY f-value not correct : no zero-frequency !
