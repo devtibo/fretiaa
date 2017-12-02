@@ -43,7 +43,10 @@ Functionnalities:
 +       Import/Open Wav Files
 +       Spectrogram SPEECH MODE
 [DONE]  KeyBoard ShortCut (Pause, Run, etc...)
-
++       Move Trigger level using arrows UP/DOWN
+[DONE]  Add a View menu including all tools
++       Use only one QAction for menu "view" and toolbar
+[DONE]  Add tools menu include HP and Trigger
 
 Code Improvements:
 ------------------
@@ -64,7 +67,7 @@ Code Improvements:
 +       UPDATE DATA in Widget using SLOTS and not function in MainWindow
 +       Use disconnect instead of global variable like in trigger in Actions managment
 +       Add multimeter to the Class QFGraph
-[DONE]  Change mouse curor for trigger level move
+[DONE]  Create Function like createMenu, createToolBar, etc... to render the code more readable
 +       Choose a faster FFT algortihm than fftreal like FFTW3 !
 +       double click on selected reactangle to move it
 +++     Replace following by a DCPGridLayout to use MarginGroup an align axesRect
@@ -92,6 +95,6 @@ Code Improvements:
 [DONE]  App Crash when disble XY value on spectrogram!!!!
 [DONE]  ToolBar stays when disable spectrogram graph !
 [DONE]  XY on octave spectrum cause critical CRASH
-+       XY value using arrow pad not work when more than one is used
++       XY value using arrow pad not work when more than one is used : because activatedAmbiguously() is emitted and not activated() signal... why?
 +       Spectrogram XY f-value not correct : no zero-frequency !
-+       data only update when signal arise to observatio timle
+++      CHANGE CURSOR OVE TRIGGER NOT WORKING !!! [BUG]  Change mouse curor for trigger level move : make menu innaccessible because WRONG use of "parent" in oscillogram

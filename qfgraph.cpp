@@ -246,6 +246,7 @@ void QFGraph::onInteractionXYPoints(bool isChecked)
         // Move tracer with arrow
         sCArrowsL = new QShortcut(this);
         sCArrowsL->setKey( Qt::Key_Left);
+        connect(sCArrowsL, SIGNAL(activatedAmbiguously()), this, SLOT(onKeyLPress()));
         connect(sCArrowsL, SIGNAL(activated()), this, SLOT(onKeyLPress()));
         sCArrowsR = new QShortcut(this);
         sCArrowsR->setKey(Qt::Key_Right);
@@ -531,9 +532,6 @@ void QFGraph::SetTracerAt(double x, double y)
         phaseTracerColorMap->setGraphValue(y);
         phaseTracerColorMap->updatePosition(); // else what the position values are not correct
         phaseTracerText->setText(QString("(time: %1, freq: %2, Mag: %3)").arg(phaseTracerColorMap->position->key()).arg(phaseTracerColorMap->position->value()).arg(graphDataColorMap->data(phaseTracerColorMap->position->key(),phaseTracerColorMap->position->value())));
-
-        qDebug("%f",phaseTracerColorMap->position->key());
-
     }
 
 

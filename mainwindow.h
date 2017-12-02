@@ -93,6 +93,11 @@ private :
     void updateGain();
     void closeEvent(QCloseEvent *);
 
+    void createViewMenu();
+    void createToolsMenu();
+    void createFileMenu();
+    void createOptionsMenu();
+    void createHelpMenu();
 
 public slots:
     // Sound acquisition Slot

@@ -13,7 +13,7 @@ class Oscillogram : public QWidget
     Q_OBJECT
 public:
 
-    QWidget *m_parent;
+    QWidget *parent;
     //explicit Oscillogram(QWidget *parent = 0);
     Oscillogram( DataSharer*,QWidget *parent=0);
     ///![] Oscillogram

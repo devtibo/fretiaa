@@ -5,7 +5,7 @@ Oscillogram::Oscillogram(DataSharer *data, QWidget* parent):
     QWidget(parent)
 {
 
-    m_parent = parent;
+  // m_parent = parent;
     m_Data = data;
 
     /* Create Graphic*/
@@ -156,12 +156,12 @@ void Oscillogram::onMouseMove(QMouseEvent* event)
 
         double sel;
 
-        /* Change Mouse cursor*/
+        /* Change Mouse cursor ** NOT WORKING */
         sel=triggerLine->selectTest(event->pos(),false,0);
         if (sel <= cPlot->selectionTolerance())
-            m_parent->setCursor(Qt::SizeVerCursor);
+            setCursor(Qt::SizeVerCursor);
         else
-            m_parent->setCursor(Qt::ArrowCursor);
+            setCursor(Qt::ArrowCursor);
 
 
 

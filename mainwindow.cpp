@@ -38,37 +38,6 @@ MainWindow::MainWindow(QWidget *parent)
     //!--------------------------------------------------------------------
 
 
-    //![] MenuBar
-    //! ----------
-    /* "File" menu */
-    QMenu *menuFile= menuBar()->addMenu(tr("&File"));
-
-    QMenu *menuExport = new QMenu("Export Data");
-    QAction *actionExportOsc = new QAction("Export Oscillogram");
-    QAction *actionExportSpectro = new QAction("Export Spectrogram");
-    menuExport->addAction(actionExportOsc);
-    menuExport->addAction(actionExportSpectro);
-    menuFile->addMenu(menuExport);
-
-    QAction *actionClose = new QAction("&Close",this);
-    menuFile->addAction(actionClose);
-
-    /* "Options" menu */
-    QMenu *menuOptions= menuBar()->addMenu(tr("&Options"));
-    QAction *actionAudioInputConfig = new QAction("&Input config",this);
-    QAction *actionGainConfig = new QAction("&Gain config",this);
-    menuOptions->addAction(actionAudioInputConfig);
-    menuOptions->addAction(actionGainConfig);
-    /* "About" menu */
-    QMenu *menuHelp= menuBar()->addMenu(tr("&Help"));
-    QAction *action_about = new QAction("About FReTiAA");
-    menuHelp->addAction(action_about);
-
-
-    connect(actionClose,SIGNAL(triggered()),this,SLOT(exitApp()));
-    connect(actionAudioInputConfig, SIGNAL(triggered()), this, SLOT(openAudioConfigDialog()));
-    connect(actionGainConfig, SIGNAL(triggered()), this, SLOT(openGainConfigDialog()));
-    connect(action_about, SIGNAL(triggered()), this, SLOT(openAboutDialog()));
 
     //!--------------------------------------------------------------------
 
@@ -169,13 +138,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(interactionMoveAnalyseRect,SIGNAL(toggled(bool)),this,SLOT(onMoveAnalyseRect(bool)));
     //!--------------------------------------------------------------------
 
-
     //![] Oscilloscope
     //! --------------
-    cPlotOscillogram = new Oscillogram(data,this);
+    cPlotOscillogram = new Oscillogram(data);
     data->qPlotOscillogram = cPlotOscillogram->cPlot;
-    connect(actionExportOsc,SIGNAL(triggered()), cPlotOscillogram,SLOT(onExportData()));
 
+    // cPlotOscillogram->setCursor(Qt::SizeVerCursor);
     //!--------------------------------------------------------------------
 
 
@@ -183,7 +151,7 @@ MainWindow::MainWindow(QWidget *parent)
     //! -------------
     cPlotSpectrogram = new Spectrogram(data);
     data->qPlotSpectrogram = cPlotSpectrogram->cPlot;
-    connect(actionExportSpectro,SIGNAL(triggered()), cPlotSpectrogram,SLOT(onExportData()));
+
     //!--------------------------------------------------------------------
 
 
@@ -311,9 +279,91 @@ MainWindow::MainWindow(QWidget *parent)
 
     //[DEBUG] sUncomment to see the Widget contour in the main windows
     //setStyleSheet("QWidget {" "border: 1px solid black;" "color: red" "}"); return
+
+    /*Create Menus*/
+    createFileMenu();
+    createViewMenu();
+    createToolsMenu();
+    createOptionsMenu();
+    createHelpMenu();
+
 }
 
 MainWindow::~MainWindow(){}
+
+void MainWindow::createFileMenu()
+{
+    /* "File" menu */
+    QMenu *fileMenu= menuBar()->addMenu(tr("&File"));
+
+    QMenu *exportSubMenu = new QMenu("Export Data");
+    QAction *exportOscillogramDataAction = new QAction("Export Oscillogram");
+    QAction *exportSpectrogramDataAction = new QAction("Export Spectrogram");
+    exportSubMenu->addAction(exportOscillogramDataAction);
+    exportSubMenu->addAction(exportSpectrogramDataAction);
+    fileMenu->addMenu(exportSubMenu);
+
+    QAction *closeAction = new QAction("&Close",this);
+    fileMenu->addAction(closeAction);
+
+    connect(closeAction,SIGNAL(triggered()),this,SLOT(exitApp()));
+    connect(exportOscillogramDataAction,SIGNAL(triggered()), cPlotOscillogram,SLOT(onExportData()));
+    connect(exportSpectrogramDataAction,SIGNAL(triggered()), cPlotSpectrogram,SLOT(onExportData()));
+}
+
+void MainWindow::createViewMenu()
+{
+    /* "File" menu */
+    QMenu *viewMenu= menuBar()->addMenu(tr("&View"));
+    QAction *viewSpectrumAction = new QAction(tr("&Spectrum"));
+    viewSpectrumAction->setCheckable(true);
+    QAction *viewSpectrogramAction = new QAction(tr("&Spectrogram"));
+    viewSpectrogramAction->setCheckable(true);
+    QAction *viewOctaveAction = new QAction(tr("&Octave Spectrum"));
+    viewOctaveAction->setCheckable(true);
+
+    viewMenu->addAction(viewSpectrumAction);
+    viewMenu->addAction(viewSpectrogramAction);
+    viewMenu->addAction(viewOctaveAction);
+}
+
+void MainWindow::createToolsMenu()
+{
+    /* "File" menu */
+    QMenu *toolsMenu= menuBar()->addMenu(tr("&Tools"));
+
+    QAction *triggerToolsAction = new QAction(tr("&Trigger"));
+    triggerToolsAction->setCheckable(false);
+    QAction *highPassFilterToolsAction = new QAction(tr("&20Hz High Pass Filter"));
+    highPassFilterToolsAction->setCheckable(true);
+
+    toolsMenu->addAction(triggerToolsAction);
+    toolsMenu->addAction(highPassFilterToolsAction);
+}
+
+void MainWindow::createOptionsMenu()
+{
+    /* "Options" menu */
+    QMenu *optionsMenu= menuBar()->addMenu(tr("&Options"));
+    QAction *audioInputConfigAction = new QAction("&Input config",this);
+    QAction *gainConfigAction = new QAction("&Gain config",this);
+
+    optionsMenu->addAction(audioInputConfigAction);
+    optionsMenu->addAction(gainConfigAction);
+
+    connect(audioInputConfigAction, SIGNAL(triggered()), this, SLOT(openAudioConfigDialog()));
+    connect(gainConfigAction, SIGNAL(triggered()), this, SLOT(openGainConfigDialog()));
+}
+
+void MainWindow::createHelpMenu()
+{
+    /* "About" menu */
+    QMenu *helpMenu= menuBar()->addMenu(tr("&Help"));
+    QAction *aboutAction = new QAction("About FReTiAA");
+    helpMenu->addAction(aboutAction);
+
+    connect(aboutAction, SIGNAL(triggered()), this, SLOT(openAboutDialog()));
+}
 
 void MainWindow::exitApp()
 {
@@ -493,9 +543,9 @@ void MainWindow::data2Read(void)
     if ( qMax(length_fft,data->length_fft_spectrogram)> points_y.size()) // TOTO: The right rules is this on AND  to skeep only if less than "length_fft" points are read
         return;
     else
-
         emit dataAvalaible();
 
+    /*TODO*/
     /* Wait until data are in analysis rectangle before send to plotters(spectrogrum, dbmeter, etc...) */
     if ( data->idx_begin > (points_y.size()- data->length_fft) )
     {;}
@@ -725,7 +775,7 @@ void MainWindow::updateTriggered()
     interactionTrigger->setChecked(true);
     if ( data->idx_begin > (points_y.size()- data->length_fft) )
         return;
-    qDebug("RERE");
+
     //for (int i=  data->idx_begin ; i< data->idx_begin + length_fft ; i++)
     for (int i=  data->idx_begin + length_fft -1  ; i>=data->idx_begin ; i--)
         if (points_y.at(i) >= cPlotOscillogram->triggerLevel)

@@ -27,12 +27,12 @@ Spectrogram::Spectrogram(DataSharer* data, QWidget*)
     cPlot->plotLayout()->addElement(0, 1, colorScale); // add it to the right of the main axis rect
 
     /* Create ColorMap*/
-    nx = m_data->observationTime*m_data->fs / (m_data->length_fft_spectrogram/2);
+    nx = m_data->observationTime*m_data->fs / (m_data->length_fft_spectrogram/2) -1;
     ny = m_data->length_fft_spectrogram/2;
     colorMap->data()->setRange(QCPRange(0, m_data->observationTime), QCPRange(0, float(m_data->fs/2000))); // and span the coordinate range -4..4 in both key (x) and value (y) dimensions
     colorMap->data()->setSize(nx, ny); // we want the color map to have nx * ny data points
-    colorMap->setInterpolate(true);
-    colorMap->setAntialiased(true);
+    colorMap->setInterpolate(false);
+    colorMap->setAntialiased(false);
     colorMap->setColorScale(colorScale); // associate the color map with the color scale
     colorMap->setGradient(QCPColorGradient::gpIon);
     colorMap->setDataRange(QCPRange(-20,50));
