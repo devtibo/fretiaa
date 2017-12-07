@@ -69,6 +69,7 @@ private :
     AudioEngine *m_AudioEngine;
     QVector<double> points_x;
     QVector<double> points_y;
+    QVector<double> timeVec;
 
     //![] Oscillogram
     Oscillogram *cPlotOscillogram;

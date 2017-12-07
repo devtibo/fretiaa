@@ -74,6 +74,9 @@ Code Improvements:
 
 [NOSOLUTION]   Trigger tkae various time to stop, normal because we are obliagte to watch half of rectangle because of number of data read (thus the point at the middle never correspond!) Look from end to begin of rectagnel to be more reactive. TO be correct te signal should be realign aftger trigger detection !!!
 
+MAKE IT FASTER
+..............
+According to QCustomPlot instead of using SetData is better to set addData and to only show to desired part of the signal. Milions of sample seems to be properly handles. A only erase and totaly replot sometimes
 
 
 
@@ -98,3 +101,4 @@ Code Improvements:
 +       XY value using arrow pad not work when more than one is used : because activatedAmbiguously() is emitted and not activated() signal... why?
 +       Spectrogram XY f-value not correct : no zero-frequency !
 ++      CHANGE CURSOR OVE TRIGGER NOT WORKING !!! [BUG]  Change mouse curor for trigger level move : make menu innaccessible because WRONG use of "parent" in oscillogram
++       Observation time set to 0.5@Fs44100 cause not equal vector size

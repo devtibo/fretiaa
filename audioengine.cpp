@@ -26,7 +26,8 @@ AudioEngine::AudioEngine(QObject *parent) : QObject(parent), m_AudioInput(0)
             && inputDeviceInfo.supportedSampleSizes().size() > 0
             && inputDeviceInfo.supportedCodecs().size() > 0) {
 
-        formatAudio.setSampleRate(inputDeviceInfo.supportedSampleRates().at(0));
+        int idxfs = 1;
+        formatAudio.setSampleRate(inputDeviceInfo.supportedSampleRates().at(idxfs)); // set to 0 for 8kHz
         formatAudio.setChannelCount(inputDeviceInfo.supportedChannelCounts().at(0));
         formatAudio.setSampleSize(inputDeviceInfo.supportedSampleSizes().at(1));// set to 1 for 16bits
         formatAudio.setCodec(inputDeviceInfo.supportedCodecs().at(0));
@@ -41,7 +42,7 @@ AudioEngine::AudioEngine(QObject *parent) : QObject(parent), m_AudioInput(0)
         m_AudioInput = new QAudioInput(inputDeviceInfo, formatAudio, this);
         m_AudioInput->setBufferSize(soundBufferSize);
 
-        fs = (float)inputDeviceInfo.supportedSampleRates().at(0);
+        fs = (float)inputDeviceInfo.supportedSampleRates().at(idxfs);
     }
 }
 

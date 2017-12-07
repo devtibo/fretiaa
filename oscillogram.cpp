@@ -10,6 +10,9 @@ Oscillogram::Oscillogram(DataSharer *data, QWidget* parent):
 
     /* Create Graphic*/
     cPlot = new QCustomPlot();
+#ifdef QCUSTOMPLOT_USE_OPENGL
+    cPlot->setOpenGl(true);
+#endif
     cPlot->xAxis->setLabel("Time (s)");
     cPlot->yAxis->setLabel("Pressure (Pa)");
     cPlot->yAxis->setRange(-1,1);
@@ -18,7 +21,7 @@ Oscillogram::Oscillogram(DataSharer *data, QWidget* parent):
     cPlot->addGraph();
     cPlot->graph()->setAdaptiveSampling(true);
 
-    /* Selection Rectangle */
+    /* Selection Rectangle*/
     rect = new QCPItemRect(cPlot);
     rect->setBrush(QBrush(QColor(0,0,255,70) ));
     rect->setSelectable(false);
@@ -55,6 +58,7 @@ void Oscillogram::updateData(QVector<double> x, QVector<double> y)
 {
     xData =x; yData =y; // Use to export Data // FIXME Try to get Data in QcustomPlot Conatiner directly ! Maybe should be only done in STOP Mode
     cPlot->graph(0)->setData(x,y);
+    //cPlot->graph(0)->addData(x,y);
     cPlot->replot();
 
 }

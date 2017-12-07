@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
     /** Store Shared Data and Update plots **/
     data->fs = m_AudioEngine->getFs();
     data->length_fft = length_fft;
-    data->observationTime = 2.0;
+    data->observationTime = 0.5;
     data->idx_begin = data->observationTime * data->fs - 1.0 * data->length_fft ;
     data->t_begin = 1.0 * data->idx_begin /  data->fs;
     data->data_length = data->fs * data->observationTime;
@@ -77,7 +77,8 @@ MainWindow::MainWindow(QWidget *parent)
     plotSpectro->setText("Spectrogram [G]");
     plotSpectro->setIcon(QIcon(":/icons/iconSpectro.png"));
     plotSpectro->setCheckable(true);
-    plotSpectro->setChecked(true);
+    plotSpectro->setChecked(false);
+
 
     plotSpectrum = new QAction;
     plotSpectrum->setText("Spectrum [S]");
@@ -136,6 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(plotSpectrum, SIGNAL(toggled(bool)), this, SLOT(plotSpectrumChanged(bool)));
     connect(plotOctaveSpectrum, SIGNAL(toggled(bool)), this, SLOT(plotOctaveSpectrumChanged(bool)));
     connect(interactionMoveAnalyseRect,SIGNAL(toggled(bool)),this,SLOT(onMoveAnalyseRect(bool)));
+
     //!--------------------------------------------------------------------
 
     //![] Oscilloscope
@@ -265,7 +267,7 @@ MainWindow::MainWindow(QWidget *parent)
     //![] TODO CHANGED THIS !!!!!!!!!!
     //! --------------------
     connect(this,SIGNAL(dataAvalaible()),this,SLOT(updateOscData()));
-    connect(this,SIGNAL(dataAvalaible()),this, SLOT(updateMultimeterOsc()));
+    /*   connect(this,SIGNAL(dataAvalaible()),this, SLOT(updateMultimeterOsc()));
     connect(this,SIGNAL(dataAvalaible()),this, SLOT(updateLevelMeter()));
     connect(this,SIGNAL(dataAvalaible()),this, SLOT(updatedBMeter()));
     connect(this,SIGNAL(dataAvalaible()),this, SLOT(updateSpectrumData()));
@@ -274,7 +276,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(cPlotOscillogram,SIGNAL(update()),this, SLOT(updateMultimeterOsc()));
     connect(cPlotOscillogram,SIGNAL(update()),this, SLOT(updateLevelMeter()));
-    connect(cPlotOscillogram,SIGNAL(update()),this, SLOT(updatedBMeter()));
+    connect(cPlotOscillogram,SIGNAL(update()),this, SLOT(updatedBMeter()));*/
     //!--------------------------------------------------------------------
 
     //[DEBUG] sUncomment to see the Widget contour in the main windows
@@ -287,6 +289,11 @@ MainWindow::MainWindow(QWidget *parent)
     createOptionsMenu();
     createHelpMenu();
 
+
+    plotSpectogramButtonChanged(false);
+
+    for (int i=0; i<=data->observationTime*data->fs; i++)
+        timeVec.append(i/data->fs);
 }
 
 MainWindow::~MainWindow(){}
@@ -493,30 +500,41 @@ void MainWindow::data2Read(void)
 
     // Fill the vector to Draw which is greater or equal to the input buffer size (i.e. range >= SOUND_BUFFER_SIZE)
     qint64 maxSize = m_AudioEngine->m_InputDevice->read((char*)dataSound, m_AudioEngine->soundBufferSize);
-    //dataCounter += maxSize/resolution;
     qint16 *ptr = reinterpret_cast<qint16*>(dataSound);
-    // qDebug("Available Data : %d", maxSize/resolution);
 
     /** Soit je copie tous soit je décale le buffer du graph pour le remplir par la lecture **/
     if (oldPoints_y.count() < range) { // Ici pour remplir au fur et a mesure
         points_x = oldPoints_x;//osc->m_series->points();
         points_y = oldPoints_y;//osc->m_series->points();*
 
-        if (oldPoints_y.count() + maxSize/resolution >= range)
-        {
+        if (oldPoints_y.count() + maxSize/resolution >= range) // Remove extra points at the last pass here to correspond EXACTLY to the observation time length
+        {// ici en fonctionnement nominal et décaalge
             // décalage à guache du reste puis  suppression de "rest" elemnets
             int  rest = (oldPoints_y.count() + maxSize/resolution) - range;
             points_x.remove(0,rest-1);
             points_y.remove(0,rest-1);
         }
-    } else { // ici en fonctionnement nominal et décaalge
-        for (int i = maxSize/resolution; i < oldPoints_y.count(); i++){
+    } else {
+        /// return;
+        // find a way to directly fill vector ==> points_x = oldPoints_y(idxBegin:idxEnd);
+
+        points_x = timeVec;//osc->m_series->points();
+        points_y = oldPoints_y;//osc->m_series->points();
+
+        points_x.remove(0,maxSize/resolution);
+        points_y.remove(0,maxSize/resolution);
+
+        /* OLD SOLUTION
+               for (int i = maxSize/resolution; i < oldPoints_y.count(); i++){
             points_x.append((i - maxSize/resolution)/m_AudioEngine->getFs());
             points_y.append( oldPoints_y.at(i));
-        }
+       }*/
+
     }
 
 
+
+    //Debug("%d",points_x.size() ); maxSize/resolution
     // Remplir par laz lecture
     qint64 size = points_y.count();
     for (int k = 0; k < maxSize/resolution; k++){
@@ -525,25 +543,25 @@ void MainWindow::data2Read(void)
             points_x.append((k+size)/m_AudioEngine->getFs());
             if (interactionHP->isChecked())
                 points_y.append(HP_filter->process(g1_lin * g2_lin * ptr[k]/(pow(2,8*resolution)/2)));
-            else
+            else{
                 points_y.append(g1_lin * g2_lin * ptr[k]/(pow(2,8*resolution)/2));
-
+            }
         }
         else
         {
             points_x.append((k+size)/m_AudioEngine->getFs());
             if (interactionHP->isChecked())
                 points_y.append( HP_filter->process(g1_lin * g2_lin * ptr[k]/(pow(2,8*resolution)/2)/this->sensitivity));
-            else
+            else{
                 points_y.append(g1_lin * g2_lin * ptr[k]/(pow(2,8*resolution)/2)/this->sensitivity);
+            }
         }
-
     }
 
     if ( qMax(length_fft,data->length_fft_spectrogram)> points_y.size()) // TOTO: The right rules is this on AND  to skeep only if less than "length_fft" points are read
         return;
     else
-        emit dataAvalaible();
+       emit dataAvalaible();
 
     /*TODO*/
     /* Wait until data are in analysis rectangle before send to plotters(spectrogrum, dbmeter, etc...) */
@@ -791,7 +809,7 @@ void MainWindow::updateTriggered()
 //! -*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 //!           SLOTS, UPDATES TO REPLACE WITHOUT SIGNAL/SLOT
 //! -*-*-*-*-*-*-*-*-*-*-*-*-*-*-
-/// EOF
+
 
 void MainWindow::updateLevelMeter()
 {
