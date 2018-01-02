@@ -50,9 +50,10 @@ Functionnalities:
 
 Code Improvements:
 ------------------
-+++ Main improvments :  MULTITHREADING !!!!
++++ Main improvments :  MULTITHREADING !!!! :: Change classes in thread irritated classes, i.e. oscillogram -> oscillogramThread
+
 .............................
-+       More elegant solution than DataSharer Class
++       More elegant solution than DataSharer Class See QSharedDATA
 [DONE]  Class Window
 [DONE]  Do a CLASS QFGraph (include DataTRacer, Zoom, etc ...)
 [DONE]  CLass AxisRangeDialog
@@ -71,6 +72,8 @@ Code Improvements:
 +       Choose a faster FFT algortihm than fftreal like FFTW3 !
 +       double click on selected reactangle to move it
 +++     Replace following by a DCPGridLayout to use MarginGroup an align axesRect
++++	use AddData instead of setData and only push read data and move xaxis instead of replacing all the set which take a long long time!!!!!
+
 
 [NOSOLUTION]   Trigger tkae various time to stop, normal because we are obliagte to watch half of rectangle because of number of data read (thus the point at the middle never correspond!) Look from end to begin of rectagnel to be more reactive. TO be correct te signal should be realign aftger trigger detection !!!
 
@@ -102,3 +105,9 @@ According to QCustomPlot instead of using SetData is better to set addData and t
 +       Spectrogram XY f-value not correct : no zero-frequency !
 ++      CHANGE CURSOR OVE TRIGGER NOT WORKING !!! [BUG]  Change mouse curor for trigger level move : make menu innaccessible because WRONG use of "parent" in oscillogram
 +       Observation time set to 0.5@Fs44100 cause not equal vector size
++++     Export  Data on Oscillogram using thread not workiong, similar with spectrogram
+
+
+MULTICORE
+
+Calling setData and replot in different thread cause crash. Use mutex

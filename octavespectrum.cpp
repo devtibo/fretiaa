@@ -2,24 +2,25 @@
 #include <QDesktopWidget>
 #include "qfgraph.h"
 
-OctaveSpectrum::OctaveSpectrum(DataSharer* data, QWidget*)
+OctaveSpectrum::OctaveSpectrum(DataSharer* data, QWidget* parent)
 {
+    mParent = parent;
     m_data = data;
 
     // Objects declarations
     m_filter = new OneNOctaveFilters(m_data);
     cPlot = new QCustomPlot;
     newBars = new QCPBars(cPlot->xAxis, cPlot->yAxis);
-
+    mWin = new QMainWindow();
     // Window configuration
-    setWindowTitle("FReTiAA: Octave Spectrum");
-    setWindowIcon(QIcon(":/icons/iconOctave.png"));
+    mWin->setWindowTitle("FReTiAA: Octave Spectrum");
+    mWin->setWindowIcon(QIcon(":/icons/iconOctave.png"));
 
     // Set Windows Size
     QDesktopWidget wid;
     int screenWidth = wid.screen()->width();
     int screenHeight = wid.screen()->height();
-    this->setGeometry((screenWidth/2)-(width()/2),(screenHeight/2)-(height()/2),width(),height());
+    mWin->setGeometry((screenWidth/2)-(mWin->width()/2),(screenHeight/2)-(mWin->height()/2),mWin->width(),mWin->height());
 
     // Initial Axes Configuration
     cPlot->yAxis->setRange(-20,100);
@@ -42,9 +43,9 @@ OctaveSpectrum::OctaveSpectrum(DataSharer* data, QWidget*)
     connect(m_qcfgraph,SIGNAL(exportData()), this, SLOT(onExportData()));
 
     // Set CentralWWidget
-    this->setCentralWidget(m_qcfgraph);
+    mWin->setCentralWidget(m_qcfgraph);
 
-    cPlot->replot();
+    cPlot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 
@@ -55,17 +56,21 @@ void OctaveSpectrum::closeEvent( QCloseEvent* event )
     event->accept();
 }
 
+void OctaveSpectrum::runWithParams(QVector<double> samples)
+{
+   mSamples  = samples ;
+   this->start();
+}
+
+
 /** =============================== **/
 /** =========== SLOTS ============= **/
 /** =============================== **/
-
-// Slot: Update
-void OctaveSpectrum::setData(QVector<double> data,int idx_begin )
+void OctaveSpectrum::run()
 {
-    //ORDRE 6 /Devrai suffir 2 ou filtre en HF hors classe
     // Declaration
     float rmsValues;
-    int idx,j,i;
+    int j,i;
 
     //Reset variables
     rmsValuesVec.clear();
@@ -82,8 +87,8 @@ void OctaveSpectrum::setData(QVector<double> data,int idx_begin )
         valuefilt_vec3.clear();
 
         // Apply filters
-        for (idx = idx_begin,j=0; idx < (idx_begin+m_data->length_fft); idx++,j++) {
-            valuefilt_vec.append(m_filter->filters_FcHigh_stage1.at(i)->process(m_filter->filters_FcLow_stage1.at(i)->process(data.at(idx))));
+        for (j=0; j < (m_data->rectAnalysisLength);j++) {
+            valuefilt_vec.append(m_filter->filters_FcHigh_stage1.at(i)->process(m_filter->filters_FcLow_stage1.at(i)->process(mSamples.at(j))));
             valuefilt_vec2.append(m_filter->filters_FcHigh_stage2.at(i)->process(m_filter->filters_FcLow_stage2.at(i)->process(valuefilt_vec.at(j))));
             valuefilt_vec3.append(m_filter->filters_FcHigh_stage3.at(i)->process(m_filter->filters_FcLow_stage3.at(i)->process(valuefilt_vec2.at(j))));
             //rmsValues  = data.at(idx);//(float)rmsValues + (valuefilt_vec3.at(j).y()*valuefilt_vec3.at(j).y()) / (float)m_data->length_fft;
@@ -92,7 +97,7 @@ void OctaveSpectrum::setData(QVector<double> data,int idx_begin )
         }
 
         // Convert to  dB SPL
-        rmsValues/= (float)m_data->length_fft;
+        rmsValues/= (float)m_data->rectAnalysisLength;
         rmsValues = 20.0*log10(sqrt(rmsValues)/2e-5);
         rmsValuesVec.append(rmsValues);
     }
@@ -100,7 +105,51 @@ void OctaveSpectrum::setData(QVector<double> data,int idx_begin )
     // Update DATA
     newBars->setData(xData,rmsValuesVec); // NOT VERY GOOD SHOULD BE DONE USING SIGNAL/SLOT
 
-    cPlot->replot();
+    cPlot->replot(QCustomPlot::rpQueuedReplot);
+}
+
+// Slot: Update
+void OctaveSpectrum::setData(QVector<double> data)
+{
+    //ORDRE 6 /Devrai suffir 2 ou filtre en HF hors classe
+    // Declaration
+    float rmsValues;
+    int j,i;
+
+    //Reset variables
+    rmsValuesVec.clear();
+    xData.clear();
+
+    for( i=0; i<m_data->numOctaveFilters; i++)
+    {
+        xData.append(i);
+
+        // reset loop-variables
+        rmsValues = 0.0;
+        valuefilt_vec.clear();
+        valuefilt_vec2.clear();
+        valuefilt_vec3.clear();
+
+        // Apply filters
+        for (j=0; j < (m_data->rectAnalysisLength);j++) {
+            valuefilt_vec.append(m_filter->filters_FcHigh_stage1.at(i)->process(m_filter->filters_FcLow_stage1.at(i)->process(data.at(j))));
+            valuefilt_vec2.append(m_filter->filters_FcHigh_stage2.at(i)->process(m_filter->filters_FcLow_stage2.at(i)->process(valuefilt_vec.at(j))));
+            valuefilt_vec3.append(m_filter->filters_FcHigh_stage3.at(i)->process(m_filter->filters_FcLow_stage3.at(i)->process(valuefilt_vec2.at(j))));
+            //rmsValues  = data.at(idx);//(float)rmsValues + (valuefilt_vec3.at(j).y()*valuefilt_vec3.at(j).y()) / (float)m_data->length_fft;
+            // Compute RMS
+            rmsValues  = (float)rmsValues + (valuefilt_vec.at(j)*valuefilt_vec.at(j)) ;
+        }
+
+        // Convert to  dB SPL
+        rmsValues/= (float)m_data->rectAnalysisLength;
+        rmsValues = 20.0*log10(sqrt(rmsValues)/2e-5);
+        rmsValuesVec.append(rmsValues);
+    }
+
+    // Update DATA
+    newBars->setData(xData,rmsValuesVec); // NOT VERY GOOD SHOULD BE DONE USING SIGNAL/SLOT
+
+    cPlot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 
@@ -118,7 +167,7 @@ void OctaveSpectrum::onExportData()
 
     // Open dialogBox
     QFileDialog m_fileDialog;
-    QString fname  = m_fileDialog.getSaveFileName(this, "Save file", "", ".csv");
+    QString fname  = m_fileDialog.getSaveFileName(mParent, "Save file", "", ".csv");
 
     // Save Data if file name is not empty and if SAVE button was Clicked
     if ( !fname.isEmpty() && m_fileDialog.result()==QFileDialog::Accept)

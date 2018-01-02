@@ -40,5 +40,6 @@ void LevelMeter::paintEvent(QPaintEvent *)
 void LevelMeter::levelMeterChanged(float level)
 {
     m_level = level;
-   // emit update();
+    this->repaint();
+
 }

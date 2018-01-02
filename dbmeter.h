@@ -9,7 +9,7 @@ class dBMeter : public QWidget
     Q_OBJECT
 public:
     explicit dBMeter(QWidget *parent = 0);
-    void setData(QVector<double>, float, int, int);
+    void setData(QVector<double>, float);
 signals:
 
 private :

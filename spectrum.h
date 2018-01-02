@@ -16,7 +16,7 @@ class Spectrum : public QMainWindow
 public:
     explicit Spectrum( DataSharer*,QWidget *parent=0);
     DataSharer *m_data;
-    void setData(QVector<double>,int );
+    void setData(QVector<double> );
     void closeEvent( QCloseEvent* );
     ffft::FFTReal <float> *fft_object;
     QCustomPlot *cPlot, *cPlotAngle;

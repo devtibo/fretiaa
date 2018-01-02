@@ -27,7 +27,7 @@ public:
     void setAvgValuePa(float);
     void setAbsValuePa(float);
 
-    void setData(QVector<double>, float, int, int, bool);
+    void setData(QVector<double>, float, bool);
 
     float getMaxValueInV();
     float getMaxValueInPa();

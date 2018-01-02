@@ -7,7 +7,7 @@
 #include "qcustomplot/qcustomplot.h"
 #include "onenoctavefilters.h"
 
-class OctaveSpectrum : public QMainWindow
+class OctaveSpectrum : public QThread
 {
     Q_OBJECT
 public:
@@ -16,19 +16,26 @@ public:
     QCustomPlot *cPlot;
     QCPBars *newBars ;
     OneNOctaveFilters *m_filter;
-    void setData(QVector<double> ,int  );
+    void setData(QVector<double>  );
     void closeEvent( QCloseEvent* );
     QVector<double> valuefilt_vec;
     QVector<double> valuefilt_vec3;
     QVector<double> valuefilt_vec2;
     QVector<double> rmsValuesVec;
-    QVector<double> xData;
+    QVector<double> xData, mSamples;
     QVector<QString> labels;
+
+    QWidget *mParent;
+    QMainWindow *mWin;
+
+
+    void runWithParams(QVector<double>  );
 signals:
     void octaveIsClosing();
 
 public slots:
     void onExportData();
+    void run();
 };
 
 #endif // OCTAVESPECTRUM_H

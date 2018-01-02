@@ -62,7 +62,7 @@ dBMeter::dBMeter(QWidget *parent) : QWidget(parent)
 // See http://www.nti-audio.com/en/support/faq/fast-slow-impulse-time-weighting-what-do-they-mean.aspx for more details anout time weighting
 
 // Slots : Update Data
-void dBMeter::setData(QVector<double> data, float Fs,int idx_begin, int length )
+void dBMeter::setData(QVector<double> data, float Fs )
 {
     float alpha;
     float alphaLongDecay;
@@ -71,6 +71,7 @@ void dBMeter::setData(QVector<double> data, float Fs,int idx_begin, int length )
     Leq.append(Leq_PreviousValue);
     int i;
     int j;
+    int length = data.size();
 
     // Set time weighting parameters
     if (!ponderatinTime.compare("D"))
@@ -96,7 +97,7 @@ void dBMeter::setData(QVector<double> data, float Fs,int idx_begin, int length )
         LeqLongDecay.append(Leq_PreviousValue);
 
 
-        for (i=idx_begin, j=1; i<idx_begin+length;i++,j++)
+        for (i=0, j=1; i<length;i++,j++)
         {
             Leq_tmp.append(Leq_tmp.at(j-1) + alpha * (data.at(i-1)*data.at(i-1) - Leq_tmp.at(j-1)));
             if (((j+1)-round(0.001*Fs)) >0) // A vERIFIER
@@ -126,7 +127,7 @@ void dBMeter::setData(QVector<double> data, float Fs,int idx_begin, int length )
     // For Time Weighing "D", "F" or "S"
     else
     {
-        for(i=idx_begin, j=1; i<idx_begin+length;i++,j++){ // A REVOIR !!!!!
+        for(i=0, j=1; i<0+length;i++,j++){ // A REVOIR !!!!!
             Leq.append(Leq.at(j-1) + alpha * (data.at(i) * data.at(i) - Leq.at(j-1)));
 
         }

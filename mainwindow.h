@@ -19,6 +19,9 @@
 #include "spectrogram.h"
 #include "biquad.h"
 
+
+#include "inputaudioreadthread.h"
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -30,11 +33,11 @@ public:
 private :
     //![] Global Variables to scale data
     bool interpretAsVolt = false;
-    float sensitivity = 1; // V/Pa
-    float g1_lin=1, g2_lin=1;
-    int length_fft = 1024;
-    float g1_Value=0, g2_Value=0, gSensi_Value=sensitivity;
-    QString g1_Unit="dB", g2_Unit="dB", gSensi_Unit="V/Pa";
+    float sensitivity; // V/Pa
+    float g1_lin, g2_lin;
+    int length_fft;
+    float g1_Value, g2_Value, gSensi_Value=sensitivity;
+    QString g1_Unit, g2_Unit, gSensi_Unit;
     DataSharer *data = new DataSharer;
 
     //![] HP filter
@@ -65,11 +68,9 @@ private :
     QGridLayout * centralLayout = new QGridLayout;
 
     //![] AudioEngine
-    uchar *dataSound;
     AudioEngine *m_AudioEngine;
-    QVector<double> points_x;
     QVector<double> points_y;
-    QVector<double> timeVec;
+
 
     //![] Oscillogram
     Oscillogram *cPlotOscillogram;
@@ -87,11 +88,12 @@ private :
     Spectrogram *cPlotSpectrogram;
 
     //![] Octave Spectrum
-    bool isOctave;
+    bool isOctaveView;
     OctaveSpectrum *cPlotOctaveSpectrum;
 
     void updateStatusBar();
     void updateGain();
+
     void closeEvent(QCloseEvent *);
 
     void createViewMenu();
@@ -100,10 +102,9 @@ private :
     void createOptionsMenu();
     void createHelpMenu();
 
-public slots:
-    // Sound acquisition Slot
-    void data2Read(void);
+      InputAudioReadThread *mAudioThread;
 
+public slots:
     //Slot of ToolBar
     void liveViewChanged(bool);
     void plotSpectogramButtonChanged(bool);
@@ -127,6 +128,7 @@ public slots:
     void updatedBMeter();
     void updateSpectrogram();
 
+
     // ShortCuts
     void onKeySpacePress();
     void onKeyTPress();
@@ -144,7 +146,8 @@ public slots:
     void exitApp();
 
 signals:
-    void dataAvalaible(void);
+    //void dataAvalaible(void);
+
 
 };
 

@@ -49,9 +49,9 @@ Spectrum::Spectrum(DataSharer* data, QWidget*)
 
 
     // FFT and ponderation window declaration
-    fft_object = new FFTReal<float>(m_data->length_fft);
+    fft_object = new FFTReal<float>(m_data->rectAnalysisLength);
 
-    Windows *m_win = new Windows(Windows::hanning,m_data->length_fft);
+    Windows *m_win = new Windows(Windows::hanning,m_data->rectAnalysisLength);
     win = m_win->getWin();
     /*for (int i=0; i <m_data->length_fft;i++)
         hann.append(0.5 *(1.0 - cos( (2.0*M_PI * i)/(m_data->length_fft-1.0))));
@@ -68,28 +68,28 @@ Spectrum::Spectrum(DataSharer* data, QWidget*)
 
 }
 
-void Spectrum::setData(QVector<double> data,int idx_begin )
+void Spectrum::setData(QVector<double> data )
 {
 
-    float input_fft[m_data->length_fft];
-    float output_fft[m_data->length_fft];
+    float input_fft[m_data->rectAnalysisLength];
+    float output_fft[m_data->rectAnalysisLength];
 
     freqValues.clear();
     fftValues.clear();
     angleValues.clear();
 
-    int i,j;
-    for( i=idx_begin, j=0; i<idx_begin+m_data->length_fft;i++, j++)
-        input_fft[j] = data.at(i) * win.at(j);
+    int i;
+    for( i=0; i<m_data->rectAnalysisLength;i++)
+        input_fft[i] = data.at(i) * win.at(i);
 
     fft_object->do_fft(output_fft,input_fft);
 
 
-    for (int i=0; i<m_data->length_fft/2;i++){
+    for (int i=0; i<m_data->rectAnalysisLength/2;i++){
         //freqValues.append(float((i*1.0)/m_data->length_fft * 1.0 *m_data->fs));
-        freqValues.append(i/(m_data->length_fft/2.0-1.0) * m_data->fs/2.0); // TO BE VERIFY
-        fftValues.append(20.0*log10((sqrt(output_fft[i]*output_fft[i] +output_fft[i+m_data->length_fft/2]*output_fft[i+m_data->length_fft/2]))/m_data->length_fft/2.0e-5));
-        angleValues.append( 2.0 * atan(output_fft[i+m_data->length_fft/2] / output_fft[i])); // Why multipled by 2 !!
+        freqValues.append(i/(m_data->rectAnalysisLength/2.0-1.0) * m_data->fs/2.0); // TO BE VERIFY
+        fftValues.append(20.0*log10((sqrt(output_fft[i]*output_fft[i] +output_fft[i+m_data->rectAnalysisLength/2]*output_fft[i+m_data->rectAnalysisLength/2]))/m_data->rectAnalysisLength/2.0e-5));
+        angleValues.append( 2.0 * atan(output_fft[i+m_data->rectAnalysisLength/2] / output_fft[i])); // Why multipled by 2 !!
     }
 
 
@@ -99,8 +99,8 @@ void Spectrum::setData(QVector<double> data,int idx_begin )
     cPlotAngle->graph(0)->setData(freqValues,angleValues);
     // phaseTracerText->setText(QString("(freq: %1, Mag: %2)").arg(phaseTracer->position->key()).arg(phaseTracer->position->value()));
 
-    cPlot->replot();
-    cPlotAngle->replot();
+    cPlot->replot(QCustomPlot::rpQueuedReplot);
+    cPlotAngle->replot(QCustomPlot::rpQueuedReplot);
 
 }
 
@@ -129,7 +129,7 @@ void Spectrum::onExportData()
         QFile f( fname );
         f.open( QIODevice::WriteOnly );
         QTextStream stream(&f);
-        for (int i=0; i<m_data->length_fft/2; i++)
+        for (int i=0; i<m_data->rectAnalysisLength/2; i++)
             stream << freqValues.at(i) << "," << fftValues.at(i) << endl;
         f.close();
     }

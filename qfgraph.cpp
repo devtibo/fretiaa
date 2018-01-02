@@ -156,7 +156,7 @@ void QFGraph::resizeAxisDialog(QCPAxis * m_axis, QPoint pos)
     // Process when OK button is clicked
     if (dialog->exec() == QDialog::Accepted) {
         m_axis->setRange(dialog->val1, dialog->val2);
-        cPlot->replot();
+        cPlot->replot(QCustomPlot::rpQueuedReplot);
     }
 }
 
@@ -169,7 +169,7 @@ void QFGraph::onResetAxis()
 {
     cPlot->xAxis->setRange(defaultX);
     cPlot->yAxis->setRange(defaultY);
-    cPlot->replot();
+    cPlot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 void QFGraph::onInteractionRectZoomAction(bool isChecked)
@@ -363,7 +363,7 @@ void QFGraph::onInteractionXYPoints(bool isChecked)
         delete sCArrowsDOWN;
 
         //phaseTracerText->setVisible(false);
-        cPlot->replot();
+        cPlot->replot(QCustomPlot::rpQueuedReplot);
     }
 }
 
@@ -408,7 +408,7 @@ void QFGraph::updateTracerText()
             phaseTracerText->setText(QString("(time: %1, freq: %2, Mag: %3)").arg(phaseTracerColorMap->position->key()).arg(phaseTracerColorMap->position->value()).arg(graphDataColorMap->data(phaseTracerColorMap->position->key(),phaseTracerColorMap->position->value())));
             break;
         }
-        cPlot->replot(); // TODO : Only if not LiveView !!!!
+        cPlot->replot(QCustomPlot::rpQueuedReplot); // TODO : Only if not LiveView !!!!
     }
 }
 
@@ -519,7 +519,7 @@ void QFGraph::SetTracerAt(double x)
     }
 
 
-    cPlot->replot(); // TODO : Only if not LiveView !!!!
+    cPlot->replot(QCustomPlot::rpQueuedReplot); // TODO : Only if not LiveView !!!!
 }
 
 
@@ -535,7 +535,7 @@ void QFGraph::SetTracerAt(double x, double y)
     }
 
 
-    cPlot->replot(); // TODO : Only if not LiveView !!!!
+    cPlot->replot(QCustomPlot::rpQueuedReplot); // TODO : Only if not LiveView !!!!
 }
 
 
@@ -551,7 +551,7 @@ void  QFGraph::onAxisDoubleClick(QCPAxis* m_axis,QCPAxis::SelectablePart ,QMouse
 void QFGraph::onInteractionAutoZoom(bool)
 {
     cPlot->rescaleAxes();
-    cPlot->replot();
+    cPlot->replot(QCustomPlot::rpQueuedReplot);
 }
 
 

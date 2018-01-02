@@ -1,26 +1,29 @@
 #ifndef OSCILLOGRAM_H
 #define OSCILLOGRAM_H
 
-#include <QWidget>
-
+#include <QThread>
 
 #include "qcustomplot/qcustomplot.h"
 #include "datasharer.h"
 #include "qfgraph.h"
 
-class Oscillogram : public QWidget
+#include <QFuture>
+
+
+
+class Oscillogram :  public QThread
 {
     Q_OBJECT
 public:
 
-    QWidget *parent;
+    QWidget *mparent;
     //explicit Oscillogram(QWidget *parent = 0);
     Oscillogram( DataSharer*,QWidget *parent=0);
     ///![] Oscillogram
     QCustomPlot *cPlot;
     //float observationTime;
     void updateData(QVector<double>, QVector<double>);
-
+    void setRectPostion(QPointF, QPointF);
     void setYlabel(QString);
 
     QCPItemRect *rect;
@@ -47,16 +50,25 @@ public:
 
     QFGraph *m_qcfgraph;
 
+    QFuture<void> f1;
+
+    void runWithParams(QVector<double>, QVector<double>);
+    void run();
 protected:
 
 signals:
 
     void update(void);
+    void rectDataAvailable();
 
 public slots:
     void onMouseMove(QMouseEvent*);
     void onExportData();
     void updateXSpectrogramAxes(QCPRange);
+
+
+
+
 };
 
 #endif // OSCILLOGRAM_H
