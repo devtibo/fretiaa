@@ -2,12 +2,16 @@
 #define MULTIMETER_H
 
 #include <QLabel>
+#include "datasharer.h"
 
 class MultiMeter : public QWidget
 {
-public:
-    MultiMeter(QWidget *parent = 0);
+        Q_OBJECT
 
+public:
+    explicit MultiMeter(DataSharer *data, QWidget *parent=0);
+
+    DataSharer* m_data;
     QLabel *lMaxValue = new QLabel("0.0");
     QLabel *lMinValue = new QLabel("0.0");
     QLabel *lAvgValue = new QLabel("0.0");
@@ -27,11 +31,13 @@ public:
     void setAvgValuePa(float);
     void setAbsValuePa(float);
 
-    void setData(QVector<double>, float, bool);
+
 
     float getMaxValueInV();
     float getMaxValueInPa();
 
+public slots:
+    void updateData();
 private :
     float maxVal_V;
     float maxVal_Pa;

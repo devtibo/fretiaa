@@ -1,4 +1,4 @@
-#include "spectrum.h"
+#include "spectrumonshot.h"
 
 #include <QDesktopWidget>
 #include <QShortcut>
@@ -8,13 +8,13 @@
 #include "windows.h"
 
 
-SpectrumWin::SpectrumWin(QWidget *)
+SpectrumWinOnShot::SpectrumWinOnShot(QWidget *)
 {
     ;
 }
 
 // OverLoad CLOSE Request
-void SpectrumWin::closeEvent( QCloseEvent* event )
+void SpectrumWinOnShot::closeEvent( QCloseEvent* event )
 {
     emit spectrumIsClosing();
     event->accept();
@@ -23,13 +23,13 @@ void SpectrumWin::closeEvent( QCloseEvent* event )
 
 
 using namespace ffft;
-Spectrum::Spectrum(DataSharer* data, QWidget* parent)
+SpectrumOnShot::SpectrumOnShot(DataSharer* data, QWidget* parent)
 {
     mParent = parent;
     m_data = data;
 
     // windows configuration
-    mWin = new SpectrumWin();
+    mWin = new SpectrumWinOnShot();
     mWin->setWindowTitle("FReTiAA: Spectrum");
     mWin->setWindowIcon(QIcon(":/icons/iconFFT.png"));
     QDesktopWidget wid;
@@ -85,7 +85,7 @@ Spectrum::Spectrum(DataSharer* data, QWidget* parent)
 
 }
 
-void Spectrum::updateData()
+void SpectrumOnShot::updateData()
 {
 
     QVector<double> data = m_data->ReadRectData();
@@ -111,7 +111,7 @@ void Spectrum::updateData()
     }
 
 
-    unwrap(angleValues,angleValues.size());
+    this->unwrap(angleValues,angleValues.size());
 
     cPlot->graph(0)->setData(freqValues,fftValues);
     cPlotAngle->graph(0)->setData(freqValues,angleValues);
@@ -123,7 +123,7 @@ void Spectrum::updateData()
 
 
 
-void Spectrum::onExportData()
+void SpectrumOnShot::onExportData()
 {
 
     QMessageBox messageBox;
@@ -147,7 +147,7 @@ void Spectrum::onExportData()
 }
 
 // see: https://www.medphysics.wisc.edu/~ethan/phaseunwrap/unwrap.c
-void unwrap(QVector<double> &p, int N)
+void SpectrumOnShot::unwrap(QVector<double> &p, int N)
 // ported from matlab (Dec 2002)
 {
     float dp[p.size()];

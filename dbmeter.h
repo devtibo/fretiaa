@@ -3,13 +3,15 @@
 #include <QWidget>
 #include <QVector>
 #include <QLabel>
+#include "datasharer.h"
 
 class dBMeter : public QWidget
 {
     Q_OBJECT
 public:
-    explicit dBMeter(QWidget *parent = 0);
-    void setData(QVector<double>, float);
+    explicit dBMeter(DataSharer *data, QWidget *parent = 0);
+    DataSharer *m_data;
+
 signals:
 
 private :
@@ -24,6 +26,7 @@ private :
 public slots:
     void timeWeigthingChanged(int);
     void frequencyWeigthingChanged(int);
+    void updateData();
 
 signals:
     void dBWeightingChanged();

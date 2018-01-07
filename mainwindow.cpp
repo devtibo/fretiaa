@@ -36,26 +36,15 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 
-    sensitivity = 1; // V/Pa
-    g1_lin=1; g2_lin=1;
-
-    length_fft = roundUpToNextPowerOfTwo(0.10*m_AudioEngine->getFs());
-    g1_Value=0; g2_Value=0;;
-    g1_Unit="dB"; g2_Unit="dB"; gSensi_Unit="V/Pa";
     /** Store Shared Data and Update plots **/
     data->fs = m_AudioEngine->getFs();
-    data->rectAnalysisLength = length_fft;
-    data->rectAnalysisDuration = length_fft /  data->fs;
+    data->rectAnalysisLength = roundUpToNextPowerOfTwo(0.20*m_AudioEngine->getFs());;
+    data->rectAnalysisDuration = data->rectAnalysisLength /  data->fs;
     data->observationTime = 10;
     data->idx_begin = data->observationTime * data->fs - 1.0 * data->rectAnalysisLength ;
     data->t_begin = 1.0 * data->idx_begin /  data->fs;
     data->data_length = data->fs * data->observationTime;
-    data->length_fft_spectrogram = 512;
-
-    data->g1_lin = g1_lin;
-    data->g2_lin = g2_lin;
-    data->sensitivity = sensitivity;
-
+    data->length_fft_spectrogram = roundUpToNextPowerOfTwo(0.02 * m_AudioEngine->getFs());
     //!--------------------------------------------------------------------
 
 
@@ -183,7 +172,7 @@ MainWindow::MainWindow(QWidget *parent)
     //![] Spectrogram
     //! -------------
     cPlotSpectrogram = new Spectrogram(data);
-    data->qPlotSpectrogram = cPlotSpectrogram->cPlot;
+    data->qPlotSpectrogram = cPlotSpectrogram;
 
     //!--------------------------------------------------------------------
 
@@ -191,19 +180,20 @@ MainWindow::MainWindow(QWidget *parent)
     //![] Spectrum
     //! -----------
     cPlotSpectrum = new Spectrum(data);
-    connect(cPlotSpectrum,SIGNAL(spectrumIsClosing()),this, SLOT(spectrumIsClosingCatch()));
+    connect(cPlotSpectrum->mWin,SIGNAL(spectrumIsClosing()),this, SLOT(spectrumIsClosingCatch()));
     //!--------------------------------------------------------------------
 
 
     //![] LevelMeter
-    m_LevelMeter = new LevelMeter;
+    m_LevelMeter = new LevelMeter(data);
     //!--------------------------------------------------------------------
 
 
     //![] Octave Spectrum
     //! -----------------
     cPlotOctaveSpectrum = new OctaveSpectrum(data);
-    connect(cPlotOctaveSpectrum,SIGNAL(octaveIsClosing()),this, SLOT(octaveIsClosingCatch()));
+    //connect(cPlotOctaveSpectrum,SIGNAL(octaveIsClosing()),this, SLOT(octaveIsClosingCatch()));
+    connect(cPlotOctaveSpectrum->mWin,SIGNAL(octaveIsClosing()),this, SLOT(octaveIsClosingCatch()));
     //!--------------------------------------------------------------------
 
 
@@ -228,23 +218,23 @@ MainWindow::MainWindow(QWidget *parent)
     line3->setFrameShadow(QFrame::Sunken);
 
     /* MultiMeter */
-    multiMeterOsc = new MultiMeter;
-    multiMeterSpec = new MultiMeter;
-    m_dBMeter = new dBMeter;
+    multiMeterOsc = new MultiMeter(data);
+    multiMeterSpec = new MultiMeter(data);
+    m_dBMeter = new dBMeter(data);
     lMultimeter->addWidget(line3,0,0,1,3);
     lMultimeter->addWidget(multiMeterOsc,1,0,1,3);
     lMultimeter->addWidget(line,2,0,1,3);
     lMultimeter->addWidget(m_dBMeter,3,0,1,3);
     lMultimeter->addWidget(line2,4,0,1,3);
 
-    connect(m_dBMeter,SIGNAL(dBWeightingChanged()),this, SLOT(updatedBMeter()));
+    // connect(m_dBMeter,SIGNAL(dBWeightingChanged()),this, SLOT(updatedBMeter()));
+    // connect(m_dBMeter,SIGNAL(dBWeightingChanged()),m_dBMeter, SLOT(updateData()));
     //!--------------------------------------------------------------------
 
 
     //![] MainLayout
     //! ------------
     QWidget *c = new QWidget(this);
-
     c->setLayout(centralLayout);
     this->setCentralWidget(c);
 
@@ -252,11 +242,12 @@ MainWindow::MainWindow(QWidget *parent)
     centralLayout->addWidget(m_LevelMeter,0,2);
     centralLayout->addWidget(multiMeterSpec,1,0,1,1);
 
+    //cPlotOscillogram->m_qcfgraph->plotLayout()->clear();
+    //cPlotSpectrogram->m_qcfgraph->plotLayout()->clear();
     //TODO Replace following by a DCPGridLayout to use MarginGroup an align axesRect
-    centralLayout->addWidget(cPlotOscillogram->cPlot,0,1);
+    centralLayout->addWidget(cPlotOscillogram->m_qcfgraph,0,1);
     centralLayout->addWidget(cPlotSpectrogram->m_qcfgraph,1,1,1,2);
     //!--------------------------------------------------------------------
-
 
     //![] AudioEngine
     //! --------------------
@@ -307,21 +298,33 @@ MainWindow::MainWindow(QWidget *parent)
     //![] TODO CHANGED THIS !!!!!!!!!!
     //! --------------------
 
-
-    connect(mAudioThread,SIGNAL(finished()),this,SLOT(updateOscData()));
-
-/*
-    connect(cPlotOscillogram,SIGNAL(rectDataAvailable()),this, SLOT(updateMultimeterOsc())); // Update widget only when data are read from the reddctangle
+    RefreshTimer = new QTimer();
+    //RefreshTimer->setInterval(50);
+    RefreshTimer->start(100);
 
 
-    connect(cPlotOscillogram,SIGNAL(rectDataAvailable()),this, SLOT(updateLevelMeter()));
+    //   connect(mAudioThread, SIGNAL(finished()),cPlotOscillogram, SLOT(start()));
+
+    connect(mAudioThread,SIGNAL(finished()),this,SLOT(connectWidgets()));
+   // connect(cPlotOscillogram,SIGNAL(rectDataAvailable()),this,SLOT(connectRectWidgets()));
+
+    //  connect(mAudioThread,SIGNAL(finished()),RefreshTimer,SLOT(start()));
+    // connect(mAudioThread,SIGNAL(finished()),this,SLOT(updateOscData()));
+    //timer->connect(timer, SIGNAL(timeout()),this, SLOT(updateOscData()));
 
 
-    connect(cPlotOscillogram,SIGNAL(rectDataAvailable()),this, SLOT(updatedBMeter()));
+    /*
+    connect(RefreshTimer,SIGNAL(timeout()),this, SLOT(updateMultimeterOsc())); // Update widget only when data are read from the reddctangle
+
+
+    connect(RefreshTimer,SIGNAL(timeout()),this, SLOT(updateLevelMeter()));
+
+
+    connect(RefreshTimer,SIGNAL(timeout()),this, SLOT(updatedBMeter()));
 
 
     //connect(mAudioThread,SIGNAL(finished()),this, SLOT(updateSpectrogram()));
-
+*/
     //!--------------------------------------------------------------------
 
     //[DEBUG] sUncomment to see the Widget contour in the main windows
@@ -335,9 +338,33 @@ MainWindow::MainWindow(QWidget *parent)
     createHelpMenu();
 
 
-    plotSpectogramButtonChanged(false);
-    data->isSpectrogramShow=false;
+    // plotSpectogramButtonChanged(false);
+    // data->isSpectrogramShow=false;
+}
 
+void MainWindow::connectRectWidgets()
+{
+    disconnect(cPlotOscillogram,SIGNAL(rectDataAvailable()),this,SLOT(connectRectWidgets()));
+
+    //connect(RefreshTimer,SIGNAL(timeout()),this, SLOT(updateMultimeterOsc())); // Update widget only when data are read from the reddctangle
+    connect(RefreshTimer,SIGNAL(timeout()),multiMeterOsc, SLOT(updateData())); // Update widget only when data are read from the reddctangle
+    connect(RefreshTimer,SIGNAL(timeout()),m_LevelMeter, SLOT(updateData()));
+    //connect(RefreshTimer,SIGNAL(timeout()),this, SLOT(updatedBMeter()));
+    connect(RefreshTimer,SIGNAL(timeout()),m_dBMeter, SLOT(updateData()));
+
+
+
+}
+
+void MainWindow::connectWidgets()
+{
+    disconnect(mAudioThread,SIGNAL(finished()),this,SLOT(connectWidgets()));
+    connect(RefreshTimer, SIGNAL(timeout()),cPlotOscillogram, SLOT(start()));
+
+    // connect(mAudioThread, SIGNAL(finished()),cPlotOscillogram, SLOT(start()));
+
+    //connect(RefreshTimer,SIGNAL(timeout()),this, SLOT(updateSpectrogram()));
+    connect(mAudioThread,SIGNAL(spectrogramFrameReady()),this,SLOT(updateSpectrogram()));
 
 
 }
@@ -421,7 +448,7 @@ void MainWindow::createHelpMenu()
 void MainWindow::exitApp()
 {
     this->close();
-    cPlotSpectrum->close();
+    cPlotSpectrum->mWin->close();
     cPlotOctaveSpectrum->mWin->close();
     m_AudioEngine->m_AudioInput->stop();
 }
@@ -442,43 +469,20 @@ void MainWindow::updateStatusBar()
     else
         lab_status->setText("Stopped");
 
-    QString text=QString("Device info : %1 @ %2 Hz @ %3 bits").arg(m_AudioEngine->inputDeviceInfo.deviceName()).arg(m_AudioEngine->formatAudio.sampleRate()).arg( m_AudioEngine->formatAudio.sampleSize());
-    lab_SoundCardInfo->setText(text);
+    // QString text=QString("Device info : %1 @ %2 Hz @ %3 bits").arg(m_AudioEngine->inputDeviceInfo.deviceName()).arg(m_AudioEngine->formatAudio.sampleRate()).arg( m_AudioEngine->formatAudio.sampleSize());
+    lab_SoundCardInfo->setText(QString("Device info : %1 @ %2 Hz @ %3 bits").arg(m_AudioEngine->inputDeviceInfo.deviceName()).arg(m_AudioEngine->formatAudio.sampleRate()).arg( m_AudioEngine->formatAudio.sampleSize()));
 
-    QString text2=QString("G1 = %1 %2, G2 = %3 %4, Sensitivity = %5 %6").arg(g1_Value).arg(g1_Unit).arg(g2_Value).arg(g2_Unit).arg(gSensi_Value).arg(gSensi_Unit);
-    lab_GainInfo->setText(text2);
+    // QString text2=QString("G1 = %1 %2, G2 = %3 %4, Sensitivity = %5 %6").arg(data->g1_Value).arg(data->g1_Unit).arg(data->g2_Value).arg(data->g2_Unit).arg(data->gSensi_Value).arg(data->gSensi_Unit);
+    lab_GainInfo->setText(QString("G1 = %1 %2, G2 = %3 %4, Sensitivity = %5 %6").arg(data->g1_Value).arg(data->g1_Unit).arg(data->g2_Value).arg(data->g2_Unit).arg(data->gSensi_Value).arg(data->gSensi_Unit));
 }
 
-
-void MainWindow::updateGain()
-{
-    // A VERIFIER !!!
-
-    if (!g1_Unit.compare("dB"))
-        g1_lin = qPow(10,g1_Value/20);
-    else if (!g1_Unit.compare("dBu"))
-        g1_lin = qPow(10,(g1_Value/0.707)/20);
-    else if (!g1_Unit.compare("dBV"))
-        g1_lin = qPow(10,g1_Value/20);
-
-    if (!g2_Unit.compare("dB"))
-        g2_lin = qPow(10,g2_Value/20);
-    else if (!g2_Unit.compare("dBu"))
-        g2_lin = qPow(10,(g2_Value/0.707)/20);
-    else if (!g2_Unit.compare("dBV"))
-        g2_lin = qPow(10,g2_Value/20);
-
-    if (!gSensi_Unit.compare("V/Pa"))
-        sensitivity = gSensi_Value;
-    else if (!gSensi_Unit.compare("mV/Pa"))
-        sensitivity = gSensi_Value *1000.0;
-}
 
 //! -*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 //!           SLOTS, Dialog Boxes
 //! -*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 void MainWindow::openAboutDialog(){
-    new AboutDialog;
+    AboutDialog *mdial = new AboutDialog;
+    delete mdial;
 }
 
 
@@ -506,20 +510,41 @@ void MainWindow::openAudioConfigDialog(){
 }
 
 void MainWindow::openGainConfigDialog(){
-    GainConfigDial * m_GainConfigDial = new GainConfigDial(g1_Value, g1_Unit, g2_Value,  g2_Unit,  gSensi_Value,  gSensi_Unit);
+    GainConfigDial * m_GainConfigDial = new GainConfigDial(data->g1_Value, data->g1_Unit, data->g2_Value,  data->g2_Unit,  data->gSensi_Value, data-> gSensi_Unit);
 
     if (m_GainConfigDial->result() == QDialog::Accepted)
     {
-        g1_Value = m_GainConfigDial->ed_G1->text().toFloat();
-        g2_Value = m_GainConfigDial->ed_G2->text().toFloat();
-        gSensi_Value = m_GainConfigDial->ed_GSensi->text().toFloat();
-        g1_Unit = m_GainConfigDial->cbx_G1->currentText();
-        g2_Unit = m_GainConfigDial->cbx_G2->currentText();
-        gSensi_Unit = m_GainConfigDial->cbx_GSensi->currentText();
+        data->g1_Value = m_GainConfigDial->ed_G1->text().toFloat();
+        data->g2_Value = m_GainConfigDial->ed_G2->text().toFloat();
+        data->gSensi_Value = m_GainConfigDial->ed_GSensi->text().toFloat();
+        data->g1_Unit = m_GainConfigDial->cbx_G1->currentText();
+        data->g2_Unit = m_GainConfigDial->cbx_G2->currentText();
+        data->gSensi_Unit = m_GainConfigDial->cbx_GSensi->currentText();
     }
 
-    updateStatusBar();
-    updateGain();
+    // A VERIFIER !!!
+
+    if (!data->g1_Unit.compare("dB"))
+        data->g1_lin = qPow(10,data->g1_Value/20);
+    else if (!data->g1_Unit.compare("dBu"))
+        data->g1_lin = qPow(10,(data->g1_Value/0.707)/20);
+    else if (!data->g1_Unit.compare("dBV"))
+        data->g1_lin = qPow(10,data->g1_Value/20);
+
+    if (!data->g2_Unit.compare("dB"))
+        data->g2_lin = qPow(10,data->g2_Value/20);
+    else if (!data->g2_Unit.compare("dBu"))
+        data->g2_lin = qPow(10,(data->g2_Value/0.707)/20);
+    else if (!data->g2_Unit.compare("dBV"))
+        data->g2_lin = qPow(10,data->g2_Value/20);
+
+    if (!data->gSensi_Unit.compare("V/Pa"))
+        data->gSensi_lin= data->gSensi_Value;
+    else if (!data->gSensi_Unit.compare("mV/Pa"))
+        data->gSensi_lin = data->gSensi_Value *1000.0;
+
+
+
     delete m_GainConfigDial;
 }
 
@@ -529,17 +554,21 @@ void MainWindow::openGainConfigDialog(){
 //! -*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 void MainWindow::liveViewChanged(bool isChecked)
 {
+
+
     isLiveView = isChecked;
 
     data->isLiveView = isLiveView;
     if (isLiveView){
-        //connect(m_AudioEngine->m_InputDevice, SIGNAL(readyRead()), this, SLOT(data2Read())); // Not really necessary
+
+        connect(RefreshTimer, SIGNAL(timeout()),cPlotOscillogram, SLOT(start()));
         m_AudioEngine->m_AudioInput->resume();
         liveView->setIcon(QIcon(":/icons/liveViewOnColoredOff.png"));
         interactionHP->setEnabled(true);
     }
     else{
-        // disconnect(m_AudioEngine->m_InputDevice, SIGNAL(readyRead()), this, SLOT(data2Read())); // Not really necessary
+
+        disconnect(RefreshTimer, SIGNAL(timeout()),cPlotOscillogram, SLOT(start()));
         m_AudioEngine->m_AudioInput->suspend();
         liveView->setIcon(QIcon(":/icons/liveViewOnColoredOn.png"));
         interactionHP->setEnabled(false);
@@ -554,16 +583,18 @@ void MainWindow::plotSpectogramButtonChanged(bool isChecked)
     if (isChecked)
     {
         cPlotSpectrogram = new Spectrogram(data);
+        data->qPlotSpectrogram = cPlotSpectrogram;
         //  cPlotSpectrogram->addGraph();
         //centralLayout->addWidget(cPlotSpectrogram->graphViewer(),1,1,1,2);
         centralLayout->addWidget(cPlotSpectrogram->m_qcfgraph,1,1,1,2);
-        multiMeterSpec = new MultiMeter;
+        multiMeterSpec = new MultiMeter(data);
         centralLayout->addWidget(multiMeterSpec,1,0,1,1);
-        connect(cPlotOscillogram,SIGNAL(rectDataAvailable()),this, SLOT(updateSpectrogram()));
+        //connect(RefreshTimer,SIGNAL(timeout()),this, SLOT(updateSpectrogram()));
+
     }
     else {
         /* Exemple to delete spectrogram */
-        disconnect(cPlotOscillogram,SIGNAL(rectDataAvailable()),this, SLOT(updateSpectrogram()));
+      //  disconnect(RefreshTimer,SIGNAL(timeout()),this, SLOT(updateSpectrogram()));
 
         QLayoutItem *item = centralLayout->itemAtPosition(1,1);
         //centralLayout->removeWidget(cPlotSpectrogram->graphViewer());
@@ -582,24 +613,42 @@ void MainWindow::plotSpectogramButtonChanged(bool isChecked)
 
 void MainWindow::plotAsChanged(int i)
 {
-    interpretAsVolt = bool(i);
-    if (interpretAsVolt)
+    data->interpretAsVolt = bool(i);
+    if (data->interpretAsVolt)
         cPlotOscillogram->setYlabel("Magnitude (V)");
     else
         cPlotOscillogram->setYlabel("Pressure (Pa)");
 
     //fixme : if live view is of and intepret changed redraw all data
+
     if (!isLiveView)
     {
-        for(int i=0; i <points_y.size();i++)
+
+        QProgressDialog mProgBar;
+        mProgBar.setLabelText("Conversion in progress...");
+
+        mProgBar.setRange(0,cPlotOscillogram->cPlot->graph()->dataCount());
+        mProgBar.show();
+        QVector<double> tmp_y;
+        QVector<double> tmp_x;
+        for (int i=0; i< cPlotOscillogram->cPlot->graph()->dataCount();i++)
         {
-            if (interpretAsVolt) // points.y are currently in Pa
-                points_y.replace(i,points_y.at(i) * sensitivity);
-            else //points.y are currently in V
-                points_y.replace(i,points_y.at(i) / sensitivity);
+            if(!(i%int(mProgBar.maximum()/20)))
+            {
+                mProgBar.setValue(i);
+                QApplication::processEvents();
+            }
+            tmp_x.append(cPlotOscillogram->cPlot->graph()->data().data()->at(i)->key);
+            if (data->interpretAsVolt) // points.y are currently in Pa
+                tmp_y.append(cPlotOscillogram->cPlot->graph()->data().data()->at(i)->value * data->gSensi_lin);
+            else
+                tmp_y.append(cPlotOscillogram->cPlot->graph()->data().data()->at(i)->value / data->gSensi_lin);
         }
-        updateMultimeterOsc();
-        updateOscData();
+
+        cPlotOscillogram->cPlot->graph()->setData(tmp_x,tmp_y);
+        multiMeterOsc->updateData();
+        //updateMultimeterOsc();
+        //updateOscData();
     }
 }
 
@@ -608,12 +657,11 @@ void MainWindow::plotOctaveSpectrumChanged(bool isChecked)
     isOctaveView = isChecked;
     if (isOctaveView)
     {
-        connect(cPlotOscillogram,SIGNAL(rectDataAvailable()),this, SLOT(updateOctaveSpectrumData()));
-        this->show();
+        connect(cPlotOscillogram,SIGNAL(rectDataAvailable()),cPlotOctaveSpectrum, SLOT(start()));
         cPlotOctaveSpectrum->mWin->show();
     }else
     {
-        disconnect(cPlotOscillogram,SIGNAL(rectDataAvailable()),this, SLOT(updateOctaveSpectrumData()));
+        disconnect(cPlotOscillogram,SIGNAL(rectDataAvailable()),cPlotOctaveSpectrum, SLOT(start()));
         cPlotOctaveSpectrum->mWin->close();
     }
 }
@@ -622,12 +670,12 @@ void MainWindow::plotSpectrumChanged(bool isChecked)
 {
     isSpectrum = isChecked;
     if (isChecked){
-        connect(this,SIGNAL(dataAvalaible()),this, SLOT(updateSpectrumData()));
-        cPlotSpectrum->show();
+        connect(cPlotOscillogram,SIGNAL(rectDataAvailable()),cPlotSpectrum, SLOT(updateData()));
+        cPlotSpectrum->mWin->show();
     }
     else{
-        disconnect(this,SIGNAL(dataAvalaible()),this, SLOT(updateSpectrumData()));
-        cPlotSpectrum->close();
+        disconnect(cPlotOscillogram,SIGNAL(rectDataAvailable()),cPlotSpectrum, SLOT(updateData()));
+        cPlotSpectrum->mWin->close();
     }
 }
 
@@ -725,13 +773,15 @@ void MainWindow::onMoveAnalyseRect(bool checked)
 
 void MainWindow::updateTriggered()
 {
+    QVector<double> points_y;
+    points_y=data->ReadRectData();
     interactionMoveAnalyseRect->setChecked(false);
     interactionTrigger->setChecked(true);
     if ( data->idx_begin > (points_y.size()- data->rectAnalysisLength) )
         return;
 
     //for (int i=  data->idx_begin ; i< data->idx_begin + length_fft ; i++)
-    for (int i=  data->idx_begin + length_fft -1  ; i>=data->idx_begin ; i--)
+    for (int i=  data->idx_begin + data->rectAnalysisLength -1  ; i>=data->idx_begin ; i--)
         if (points_y.at(i) >= cPlotOscillogram->triggerLevel)
         {
             m_AudioEngine->m_AudioInput->suspend();
@@ -746,56 +796,8 @@ void MainWindow::updateTriggered()
 //!           SLOTS, UPDATES TO REPLACE WITHOUT SIGNAL/SLOT
 //! -*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 
+void MainWindow::updateSpectrogramOnShot(){
 
-void MainWindow::updateLevelMeter()
-{
-    if(interpretAsVolt)
-        m_LevelMeter->levelMeterChanged(multiMeterOsc->getMaxValueInV());
-    else
-        m_LevelMeter->levelMeterChanged(multiMeterOsc->getMaxValueInPa());
-}
-
-
-// TODO : The followings can directly be called as a SLOT in the correspondong Class
-void MainWindow::updateMultimeterOsc()
-{
-    //QVector<double> p;
-    //p=data->ReadRectData();
-    multiMeterOsc->setData(data->ReadRectData(), sensitivity,interpretAsVolt);
-}
-
-void MainWindow::updatedBMeter()
-{
-  //  QVector<double> p;
-  //  p=data->ReadRectData();
-    m_dBMeter->setData(data->ReadRectData(), data->fs);
-}
-
-void MainWindow::updateOscData()
-{
-
-    if (~cPlotOscillogram->isRunning())
-    {
-        cPlotOscillogram->runWithParams(data->ReadPoints_x,data->ReadPoints_y);//Threading
-        cPlotOscillogram->wait();
-    }
-    else
-        qDebug("Multiple Call");
-}
-
-void MainWindow::updateSpectrumData(){
-    cPlotSpectrum->setData(points_y);
-
-}
-
-void MainWindow::updateOctaveSpectrumData(){
-    cPlotOctaveSpectrum->runWithParams(data->ReadRectData());//Threading
-    //cPlotOctaveSpectrum->setData(points_y); // standard call
-
-}
-
-void MainWindow::updateSpectrogram(){
-/*
     QVector<double>  p;
     QCPRange mRange = cPlotOscillogram->cPlot->xAxis->range();
 
@@ -803,16 +805,19 @@ void MainWindow::updateSpectrogram(){
     int idx_end = data->fs * mRange.upper;
     for (int i=idx_begin; i<= idx_end;i++)
     {
-        float y = cPlotOscillogram->cPlot->graph()->data().data()->at(i)->value;
-        p.append(y);
+        p.append(cPlotOscillogram->cPlot->graph()->data().data()->at(i)->value);
     }
 
     cPlotSpectrogram->runWithParams(p); // Threading
     // cPlotSpectrogram->update(p); // Standard call
-    */
+
 }
 
+void MainWindow::updateSpectrogram()
+{
 
+    cPlotSpectrogram->start();
+}
 
 
 

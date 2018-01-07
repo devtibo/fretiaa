@@ -7,7 +7,6 @@
 #include "datasharer.h"
 #include "qfgraph.h"
 
-#include <QFuture>
 
 
 
@@ -50,9 +49,6 @@ public:
 
     QFGraph *m_qcfgraph;
 
-    QFuture<void> f1;
-
-    void runWithParams(QVector<double>, QVector<double>);
     void run();
 protected:
 

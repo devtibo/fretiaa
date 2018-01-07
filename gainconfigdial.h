@@ -14,9 +14,6 @@ public:
     // Constructor
     GainConfigDial( float,QString,float, QString, float, QString,QWidget *parent=0);
 
-    // Dialog box
-    QDialog *dial = new QDialog;
-
     //Edits and ComboBox
     QLineEdit *ed_G1 = new QLineEdit;
     QLineEdit *ed_G2 = new QLineEdit;

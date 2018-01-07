@@ -54,26 +54,15 @@ AboutDialog::AboutDialog(QWidget *)
     vLayout->addWidget(buttonBox);
 
     // Configure the dialolg box
-    dial->setWindowTitle("About PReTiAA");
-    dial->setModal(true);
-    dial->setWindowFlags(Qt::Tool);
-    dial->setLayout(hLayout);
+    this->setWindowTitle("About PReTiAA");
+    this->setModal(true);
+    this->setWindowFlags(Qt::Tool);
+    this->setLayout(hLayout);
 
 
     //Conenction
-    connect(buttonBox,SIGNAL(accepted()),dial, SLOT(accept()));
+    connect(buttonBox,SIGNAL(accepted()),this, SLOT(accept()));
 
 
-    dial->exec();
-}
-
-/** =============================== **/
-/** =========== SLOTS ============= **/
-/** =============================== **/
-
-// Slot : Exit
-void AboutDialog::exitApp()
-{
-    dial->close();
-    delete this;
+    this->exec();
 }

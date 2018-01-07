@@ -11,17 +11,19 @@
 
 void mreplot(QCustomPlot*);
 
+class DataSharer; // This is necessary because Class Spectrogram include Class DataSharer and vice et versa!
 class Spectrogram : public QThread
 {
     Q_OBJECT
 public:
     explicit Spectrogram(DataSharer*,QWidget *parent=0);
+
     DataSharer *m_data;
     QCustomPlot *cPlot = new QCustomPlot();
     QCPColorMap *colorMap = new QCPColorMap(cPlot->xAxis, cPlot->yAxis);
     ffft::FFTReal <float> *fft_object;
     QVector<double> win;
-    void update(QVector<double>);
+    void update();
     int nx, ny;
     QCPMarginGroup *marginGroup = new QCPMarginGroup(cPlot);
 
@@ -33,6 +35,17 @@ public:
     QVector<double> mSamples;
 
     void runWithParams(QVector<double>);
+
+    bool lastFrame = 1;
+bool shiftmode=0;
+
+    int idx;
+
+    double z;
+    float *input_fft;
+    float *output_fft;
+    //QVector<double> currentFrame;
+
 public slots:
     void updateXSpectrogramAxes(QCPRange);
     void onExportData();

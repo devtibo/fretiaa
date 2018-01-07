@@ -96,15 +96,15 @@ AudioInputConfigDial::AudioInputConfigDial(AudioEngine *audioengine, QWidget*)
     /* connect(cancelButton, SIGNAL (released()),this, SLOT (cancelButtonPuched()));
     connect(applyButton, SIGNAL (released()),this, SLOT (applyButtonPuched()));*/
 
-    connect(buttonBox,SIGNAL(accepted()),dial,SLOT(accept()));
-    connect(buttonBox,SIGNAL(rejected()),dial, SLOT(reject()));
+    connect(buttonBox,SIGNAL(accepted()),this,SLOT(accept()));
+    connect(buttonBox,SIGNAL(rejected()),this, SLOT(reject()));
 
     // Dialog Box Configuration
-    dial->setModal(true);
-    dial->setWindowFlags(Qt::Tool);
-    dial->setWindowTitle("Audio Input Configuration");
-    dial->setLayout(layout);
-    dial->exec();
+    this->setModal(true);
+    this->setWindowFlags(Qt::Tool);
+    this->setWindowTitle("Audio Input Configuration");
+    this->setLayout(layout);
+    this->exec();
 
 }
 

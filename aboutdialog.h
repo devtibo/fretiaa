@@ -9,10 +9,10 @@ class AboutDialog: public QDialog
 
 public:
     AboutDialog(QWidget *parent = 0);
-    QDialog *dial = new QDialog;
+   // QDialog *dial = new QDialog;
 
 public slots:
-    void exitApp();
+
 };
 
 #endif // ABOUTDIALOG_H

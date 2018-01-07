@@ -1,7 +1,7 @@
 #include "qfgraph.h"
 
 
-QFGraph::QFGraph(QCustomPlot *m_cPlot, QCPColorMap *m_colorMatp, QWidget *parent) : QWidget(parent)
+QFGraph::QFGraph(QCustomPlot *m_cPlot, QCPColorMap *m_colorMatp, QWidget *parent)
 {
     graphTypes=3;
     mColorMap = m_colorMatp;
@@ -9,7 +9,7 @@ QFGraph::QFGraph(QCustomPlot *m_cPlot, QCPColorMap *m_colorMatp, QWidget *parent
     init(m_cPlot);
 }
 
-QFGraph::QFGraph(QCustomPlot *m_cPlot,QCPBars *m_bars, QWidget *parent) : QWidget(parent)
+QFGraph::QFGraph(QCustomPlot *m_cPlot,QCPBars *m_bars, QWidget *parent)
 {
     graphTypes=2;
     mBars  = m_bars;
@@ -19,7 +19,7 @@ QFGraph::QFGraph(QCustomPlot *m_cPlot,QCPBars *m_bars, QWidget *parent) : QWidge
 
 }
 
-QFGraph::QFGraph(QCustomPlot *m_cPlot, QCPGraph *m_graph, QWidget *parent) : QWidget(parent)
+QFGraph::QFGraph(QCustomPlot *m_cPlot, QCPGraph *m_graph, QWidget *parent)
 {
     mGraph = m_graph;
     graphTypes=1;;
@@ -512,7 +512,7 @@ void QFGraph::SetTracerAt(double x)
         phaseTracerText->setText(QString("(freq: %1, Mag: %2)").arg(phaseTracerBars->position->key()).arg(phaseTracerBars->position->value()));
         break;
         /* case 3:
-       /* phaseTracerColorMap->setGraphKey(x);
+        phaseTracerColorMap->setGraphKey(x);
         phaseTracerColorMap->updatePosition(); // else what the position values are not correct
         phaseTracerText->setText(QString("(time: %1, freq: %2, Mag: %3)").arg(phaseTracerColorMap->position->key()).arg(phaseTracerColorMap->position->value()).arg(graphDataColorMap->data(phaseTracerColorMap->position->key(),phaseTracerColorMap->position->value())));
         break;*/
@@ -571,3 +571,4 @@ bool QFGraph::ToolBarVisible()
 {
     return isToolBarVisible;
 }
+

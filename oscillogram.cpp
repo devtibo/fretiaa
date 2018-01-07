@@ -1,12 +1,11 @@
 #include "oscillogram.h"
 
 #include "xyrangedialog.h"
-
-
-void osc_replot(QCustomPlot*, DataSharer*, QVector<double> x, QVector<double> y);
+#include <QMetaType>
 
 Oscillogram::Oscillogram(DataSharer *data, QWidget* parent)
 {
+    qRegisterMetaType<QCPRange>("QCPRange");
 
     mparent = parent;
     m_Data = data;
@@ -17,7 +16,7 @@ Oscillogram::Oscillogram(DataSharer *data, QWidget* parent)
     cPlot->setOpenGl(true);
 #endif
     cPlot->xAxis->setLabel("Time (s)");
-    cPlot->xAxis->setTickLabels(false);
+    cPlot->xAxis->setTickLabels(true);
     cPlot->yAxis->setLabel("Pressure (Pa)");
     cPlot->yAxis->setRange(-1,1);
     cPlot->xAxis->setRange(0,m_Data->observationTime);
@@ -52,7 +51,7 @@ Oscillogram::Oscillogram(DataSharer *data, QWidget* parent)
     connect(m_qcfgraph,SIGNAL(exportData()), this, SLOT(onExportData()));
 
     /* connections*/
-    connect(cPlot->xAxis,SIGNAL(rangeChanged(QCPRange)),this,SLOT(updateXSpectrogramAxes(QCPRange)));
+    connect(cPlot->xAxis,SIGNAL(rangeChanged(QCPRange)),this,SLOT(updateXSpectrogramAxes(QCPRange )));
 
 }
 
@@ -63,8 +62,9 @@ Oscillogram::Oscillogram(DataSharer *data, QWidget* parent)
 
 void Oscillogram::updateData(QVector<double> x, QVector<double> y)
 {
-
+    /*
     //   xData =x; yData =y; // Use to export Data // FIXME Try to get Data in QcustomPlot Conatiner directly ! Maybe should be only done in STOP Mode
+
 
     cPlot->graph(0)->addData(x,y);
     float X = cPlot->graph(0)->dataCount()/m_Data->fs;
@@ -82,17 +82,19 @@ void Oscillogram::updateData(QVector<double> x, QVector<double> y)
     this->setRectPostion(QPointF(m_Data->t_begin,1),QPointF(m_Data->t_begin + (m_Data->rectAnalysisDuration),-1));
 
     // Update Rectangle values
-    QVector<double> mRectData;
-    for (int i=0; i< m_Data->rectAnalysisLength;i++)
+    if (cPlot->graph()->dataCount()>m_Data->rectAnalysisLength)
     {
-        float y = cPlot->graph()->data().data()->at(m_Data->idx_begin+i)->value;
-        mRectData.append(y);
+        QVector<double> mRectData;
+        for (int i=0; i< m_Data->rectAnalysisLength;i++)
+        {
+            float y = cPlot->graph()->data().data()->at(m_Data->idx_begin+i)->value;
+            mRectData.append(y);
+        }
+        m_Data->wrireRectData(y);
+        emit(rectDataAvailable());
     }
-    m_Data->wrireRectData(y);
-    emit(rectDataAvailable());
-
     cPlot->replot(QCustomPlot::rpQueuedReplot); // QCustomPlot::rpQueuedReplot means when program have the time todo it
-
+*/
 }
 
 
@@ -118,15 +120,9 @@ void Oscillogram::setYlabel(QString str)
 /** =============================== **/
 
 
-void Oscillogram::runWithParams(QVector<double> x, QVector<double> y)
-{
-xData =x;
-yData =y;
-this->start();
-}
-
 void Oscillogram::run()
 {
+    m_Data->ReadData(xData,yData);
     cPlot->graph(0)->addData(xData,yData);
     float X = cPlot->graph(0)->dataCount()/m_Data->fs;
 
@@ -152,6 +148,7 @@ void Oscillogram::run()
     emit(rectDataAvailable());
     cPlot->replot(QCustomPlot::rpQueuedReplot); // QCustomPlot::rpQueuedReplot means when program have the time todo it
     //cPlot->repaint();
+
 }
 
 void Oscillogram::updateXSpectrogramAxes(QCPRange mRange)
@@ -160,8 +157,11 @@ void Oscillogram::updateXSpectrogramAxes(QCPRange mRange)
     {
         //m_Data->qPlotSpectrogram->xAxis->setRange(cPlot->xAxis->range());
 
-       // m_Data->qPlotSpectrogram->xAxis->setRange(mRange);// Try this way
-       // m_Data->qPlotSpectrogram->replot();
+        m_Data->qPlotSpectrogram->cPlot->xAxis->setRange(mRange);// Try this way
+        m_Data->qPlotSpectrogram->colorMap->data()->setRange(mRange, QCPRange(0, float(m_Data->fs/2000)));
+        //m_Data->qPlotSpectrogram->cPlot->gra
+        if(m_Data->isLiveView==0)
+        m_Data->qPlotSpectrogram->cPlot->replot();
     }
 }
 
@@ -184,8 +184,8 @@ void Oscillogram::onExportData()
         f.open( QIODevice::WriteOnly );
         QTextStream stream(&f);
 
-        // for (int i=0; i<m_Data->data_length; i++)
-        //     stream << xData.at(i) << "," << yData.at(i) << endl;
+        for (int i=0; i<cPlot->graph()->dataCount(); i++)
+            stream << cPlot->graph()->data().data()->at(i)->value << "\n";
 
         f.close();
     }
@@ -258,7 +258,7 @@ void Oscillogram::onMouseMove(QMouseEvent* event)
         if (sel <= cPlot->selectionTolerance())
             cPlot->setCursor(Qt::SizeVerCursor);
         else
-           cPlot->setCursor(Qt::ArrowCursor);
+            cPlot->setCursor(Qt::ArrowCursor);
 
 
 

@@ -51,7 +51,7 @@ Spectrogram::Spectrogram(DataSharer* data, QWidget* parent)
     fft_object = new FFTReal<float>(m_data->length_fft_spectrogram);
 
     /* Compute hanning window */
-    Windows *m_win = new Windows(Windows::hanning,m_data->rectAnalysisLength);
+    Windows *m_win = new Windows(Windows::hanning,m_data->length_fft_spectrogram);
     win = m_win->getWin();
 
     /* Add graph to QCFGraph*/
@@ -64,77 +64,45 @@ Spectrogram::Spectrogram(DataSharer* data, QWidget* parent)
     connect(cPlot->xAxis,SIGNAL(rangeChanged(QCPRange)),this,SLOT(updateXSpectrogramAxes(QCPRange)));
 
 
+    idx=0;
+    input_fft = (float*) malloc (m_data->length_fft_spectrogram * sizeof(float));
+    output_fft= (float*) malloc (m_data->length_fft_spectrogram * sizeof(float));
 }
 
 /** =============================== **/
 /** ========== METHODS ============ **/
 /** =============================== **/
-void Spectrogram::update(QVector<double> data)
+void Spectrogram::update()
 
 {
-return;
-    QTime timeProfiler;
-    timeProfiler.start();
+    // float input_fft[m_data->length_fft_spectrogram];
+    // float output_fft[m_data->length_fft_spectrogram];
+    QVector<double> currentFrame;
 
-    float input_fft[m_data->length_fft_spectrogram];
-    float output_fft[m_data->length_fft_spectrogram];
 
-    int idx = 0;
-    int i,j,k;
-    double z;
-    for (i=0; i< data.size()-m_data->length_fft_spectrogram ; i+= m_data->length_fft_spectrogram/2)
+
+    currentFrame = m_data->framesQueue.dequeue();
+
+
+    for( int i=0; i<m_data->length_fft_spectrogram;i++)
     {
-        for (j=0;j<m_data->length_fft_spectrogram; j++)
-            input_fft[j] = data.at(i+j) * win.at(j);
-
-        fft_object->do_fft(output_fft,input_fft);
-
-        for (k=0; k<m_data->length_fft_spectrogram/2;k++){
-            z=20.0*log10((sqrt(output_fft[k]*output_fft[k]+output_fft[k+m_data->length_fft_spectrogram/2] \
-                          *output_fft[k+m_data->length_fft_spectrogram/2]))/m_data->length_fft_spectrogram/2.0e-5);
-            colorMap->data()->setCell(idx, k, z);
-        }
-        idx++;
+        input_fft[i] = currentFrame.at(i);
+        //  qDebug("%d : %f", i, input_fft[i]);
     }
 
-    cPlot->replot(QCustomPlot::rpQueuedReplot);
-   // qDebug("Spectrogram computation execution Time : %d ms",timeProfiler.elapsed());
-  //  f1 = QtConcurrent::run(mreplot,cPlot);
-   // f1.waitForFinished();
-}
+    fft_object->do_fft(output_fft,input_fft);
 
 
-
-void Spectrogram::runWithParams(QVector<double> samples)
-{
-mSamples = samples;
-this->start();
-}
-/** =============================== **/
-/** =========== SLOTS ============= **/
-/** =============================== **/
-void Spectrogram::run()
-{
-    float input_fft[m_data->length_fft_spectrogram];
-    float output_fft[m_data->length_fft_spectrogram];
-
-    int idx = 0;
-    int i,j,k;
-    double z;
-    for (i=0; i< mSamples.size()-m_data->length_fft_spectrogram ; i+= m_data->length_fft_spectrogram/2)
-    {
-        for (j=0;j<m_data->length_fft_spectrogram; j++)
-            input_fft[j] = mSamples.at(i+j) * win.at(j);
-
-        fft_object->do_fft(output_fft,input_fft);
-
-        for (k=0; k<m_data->length_fft_spectrogram/2;k++){
-            z=20.0*log10((sqrt(output_fft[k]*output_fft[k]+output_fft[k+m_data->length_fft_spectrogram/2] \
-                          *output_fft[k+m_data->length_fft_spectrogram/2]))/m_data->length_fft_spectrogram/2.0e-5);
-            colorMap->data()->setCell(idx, k, z);
-        }
-        idx++;
+    for (int k=0; k<m_data->length_fft_spectrogram/2;k++){
+        z=20.0*log10((sqrt(output_fft[k]*output_fft[k]+output_fft[k+m_data->length_fft_spectrogram/2] \
+                      *output_fft[k+m_data->length_fft_spectrogram/2]))/m_data->length_fft_spectrogram/2.0e-5);
+        colorMap->data()->setCell(idx, k, z);
     }
+    idx++;
+
+    if(nx==idx)
+        idx=0;
+
 
     cPlot->replot(QCustomPlot::rpQueuedReplot);
 }
@@ -145,8 +113,62 @@ void Spectrogram::updateXSpectrogramAxes(QCPRange)
     //m_data->qPlotOscillogram->xAxis->setRange(cPlot->xAxis->range());
 
     m_data->qPlotOscillogram->replot();
-
 }
+
+
+
+void Spectrogram::runWithParams(QVector<double> samples)
+{
+    return;
+    mSamples = samples;
+    this->start();
+}
+/** =============================== **/
+/** =========== SLOTS ============= **/
+/** =============================== **/
+void Spectrogram::run()
+{
+    // float input_fft[m_data->length_fft_spectrogram];
+    // float output_fft[m_data->length_fft_spectrogram];
+    QVector<double> currentFrame;
+
+
+
+    currentFrame = m_data->framesQueue.dequeue();
+
+
+    for( int i=0; i<m_data->length_fft_spectrogram;i++)
+    {
+        input_fft[i] = currentFrame.at(i);
+        //  qDebug("%d : %f", i, input_fft[i]);
+    }
+
+    fft_object->do_fft(output_fft,input_fft);
+
+    for (int k=0; k<m_data->length_fft_spectrogram/2;k++){
+        z=20.0*log10((sqrt(output_fft[k]*output_fft[k]+output_fft[k+m_data->length_fft_spectrogram/2] \
+                      *output_fft[k+m_data->length_fft_spectrogram/2]))/m_data->length_fft_spectrogram/2.0e-5);
+        if (shiftmode==0)
+        {
+            colorMap->data()->setCell(idx, k, z);
+        }
+        else
+        {
+
+            colorMap->data()->setCell(idx, k, z);
+        }
+    }
+    idx++;
+
+    if(nx==idx)
+    {idx=0;
+        shiftmode=1;
+    }
+
+
+    cPlot->replot(QCustomPlot::rpQueuedReplot);
+}
+
 
 
 void Spectrogram::onExportData()

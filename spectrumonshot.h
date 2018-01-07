@@ -1,5 +1,5 @@
-#ifndef SPECTRUM_H
-#define SPECTRUM_H
+#ifndef SPECTRUMONSHOT_H
+#define SPECTRUMONSHOT_H
 
 #include <QMainWindow>
 #include <QWidget>
@@ -8,26 +8,26 @@
 #include "ffft/FFTReal.h"
 #include "qcustomplot/qcustomplot.h"
 
-void unwrap(QVector<double> &p, int N);
 
-class SpectrumWin : public QMainWindow
+
+class SpectrumWinOnShot : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit SpectrumWin(QWidget *parent=0);
+    explicit SpectrumWinOnShot(QWidget *parent=0);
     void closeEvent(QCloseEvent*);
 signals:
     void spectrumIsClosing();
 };
 
 
-class Spectrum : public QThread
+class SpectrumOnShot : public QThread
 {
     Q_OBJECT
 public:
-    explicit Spectrum( DataSharer*,QWidget *parent=0);
+    explicit SpectrumOnShot( DataSharer*,QWidget *parent=0);
     QWidget *mParent;
-    SpectrumWin *mWin;
+    SpectrumWinOnShot *mWin;
     DataSharer *m_data;
     void closeEvent( QCloseEvent* );
     ffft::FFTReal <float> *fft_object;
@@ -39,11 +39,11 @@ public:
     QVector<double> fftValues;
     QVector<double> angleValues;
 
-
+void unwrap(QVector<double> &p, int N);
 
 public slots:
     void onExportData();
     void updateData();
 };
 
-#endif // SPECTRUM_H
+#endif // SPECTRUMONSHOT_H

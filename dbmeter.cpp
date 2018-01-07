@@ -3,8 +3,9 @@
 #include <QGridLayout>
 #include <QComboBox>
 
-dBMeter::dBMeter(QWidget *parent) : QWidget(parent)
+dBMeter::dBMeter(DataSharer *data, QWidget *parent) : QWidget(parent)
 {
+    m_data = data;
     // Debicel unit label
     m_dBUnit = new QLabel("dB(SPL)<sub>S</sub>");
     QFont f2 = font();
@@ -62,8 +63,13 @@ dBMeter::dBMeter(QWidget *parent) : QWidget(parent)
 // See http://www.nti-audio.com/en/support/faq/fast-slow-impulse-time-weighting-what-do-they-mean.aspx for more details anout time weighting
 
 // Slots : Update Data
-void dBMeter::setData(QVector<double> data, float Fs )
+void dBMeter::updateData()
 {
+
+    QVector<double> data =m_data->ReadRectData();
+    float Fs = m_data->fs;
+
+
     float alpha;
     float alphaLongDecay;
     bool isPeak;
@@ -141,7 +147,6 @@ void dBMeter::setData(QVector<double> data, float Fs )
     // Update Lavel
     m_dBValue->setText(QString::number(Leq.at(round(Leq.size()/2)),'f',2));
 }
-
 
 // Slot : Time Weithing Changed
 void dBMeter::timeWeigthingChanged(int idx)

@@ -1,7 +1,8 @@
 #include "levelmeter.h"
 
-LevelMeter::LevelMeter(QWidget *parent) : QWidget(parent)
+LevelMeter::LevelMeter(DataSharer *data, QWidget *parent) : QWidget(parent)
 {
+    m_data = data;
     setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     setMinimumWidth(75);
 }
@@ -36,10 +37,23 @@ void LevelMeter::paintEvent(QPaintEvent *)
 /** =========== SLOTS ============= **/
 /** =============================== **/
 
+void LevelMeter::updateData()
+{
+    if (m_data->interpretAsVolt)
+        m_level = m_data->maxValueInV;
+    else
+        m_level = m_data->maxValueInPa;
+
+    this->repaint();
+
+
+}
+
+/*
 // Slot: Update
 void LevelMeter::levelMeterChanged(float level)
 {
     m_level = level;
     this->repaint();
 
-}
+}*/

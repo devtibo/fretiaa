@@ -43,6 +43,10 @@ GainConfigDial::GainConfigDial(float g1_Value,QString g1_Unit,float g2_Value, QS
     QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok
                                                        | QDialogButtonBox::Cancel);
 
+    // Connection
+    connect(buttonBox, SIGNAL (accepted()),this, SLOT (accept()));
+    connect(buttonBox, SIGNAL (rejected()),this, SLOT(reject()));
+
     // Create and Fill combobox Layouts
     QVBoxLayout *Hlayout = new QVBoxLayout;
     QGridLayout *layout = new QGridLayout;
@@ -61,17 +65,16 @@ GainConfigDial::GainConfigDial(float g1_Value,QString g1_Unit,float g2_Value, QS
     frame1->setLayout(layout);
     Hlayout->addWidget(frame1);
     Hlayout->addWidget(buttonBox);
-    dial->setLayout(Hlayout);
+    this->setLayout(Hlayout);
 
     // Configure and execute dialogBox
-    dial->setWindowTitle("Gain configuration");
-    dial->setModal(true);
-    dial->setWindowFlags(Qt::Tool);
+    this->setWindowTitle("Gain configuration");
+    this->setModal(true);
+    this->setWindowFlags(Qt::Tool);
 
-    // Connection
-    connect(buttonBox, SIGNAL (accepted()),dial, SLOT (accept()));
-    connect(buttonBox, SIGNAL (rejected()),dial, SLOT(reject()));
 
-    dial->exec();
+
+
+    this->exec();
 }
 

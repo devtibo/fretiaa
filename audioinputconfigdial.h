@@ -13,7 +13,6 @@ public:
     AudioInputConfigDial(AudioEngine *audioengine,QWidget *parent = 0);
 
     // To create the dialog Box
-    QDialog *dial = new QDialog;
     QComboBox* cbxDevice  = new QComboBox;
     QComboBox* cbxSampleRate = new QComboBox;
     QComboBox* cbxSampleSize = new QComboBox;

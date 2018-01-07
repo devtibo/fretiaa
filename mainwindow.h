@@ -32,14 +32,9 @@ public:
 
 private :
     //![] Global Variables to scale data
-    bool interpretAsVolt = false;
-    float sensitivity; // V/Pa
-    float g1_lin, g2_lin;
-    int length_fft;
-    float g1_Value, g2_Value, gSensi_Value=sensitivity;
-    QString g1_Unit, g2_Unit, gSensi_Unit;
+    // bool interpretAsVolt = false;
     DataSharer *data = new DataSharer;
-
+    QTimer *RefreshTimer;
     //![] HP filter
     Biquad *HP_filter;
 
@@ -69,7 +64,7 @@ private :
 
     //![] AudioEngine
     AudioEngine *m_AudioEngine;
-    QVector<double> points_y;
+
 
 
     //![] Oscillogram
@@ -92,7 +87,6 @@ private :
     OctaveSpectrum *cPlotOctaveSpectrum;
 
     void updateStatusBar();
-    void updateGain();
 
     void closeEvent(QCloseEvent *);
 
@@ -102,9 +96,13 @@ private :
     void createOptionsMenu();
     void createHelpMenu();
 
-      InputAudioReadThread *mAudioThread;
+    InputAudioReadThread *mAudioThread;
 
 public slots:
+
+    void connectWidgets();
+    void connectRectWidgets();
+
     //Slot of ToolBar
     void liveViewChanged(bool);
     void plotSpectogramButtonChanged(bool);
@@ -120,13 +118,9 @@ public slots:
     void updateTriggered();
 
     // Slot to update widgets
-    void updateOscData();
-    void updateSpectrumData();
-    void updateOctaveSpectrumData();
-    void updateMultimeterOsc();
-    void updateLevelMeter();
-    void updatedBMeter();
     void updateSpectrogram();
+    void updateSpectrogramOnShot();
+
 
 
     // ShortCuts

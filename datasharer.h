@@ -4,7 +4,10 @@
 #include "qcustomplot/qcustomplot.h"
 #include "audioengine.h"
 #include <QReadWriteLock>
-
+#include <QString>
+#include <QQueue>
+#include "spectrogram.h"
+class Spectrogram; // This is necessary because Class Spectrogram include Class DataSharer and vice et versa!
 
 class DataSharer
 {
@@ -27,28 +30,85 @@ public:
     bool isLiveView = true;
     bool isRectMove = false;
     bool isTrigger = false;
-    float g2_lin;
-    float g1_lin;
-    float sensitivity;
-    bool isSpectrogramShow=false;
+    bool isSpectrogramShow=true;
+    bool interpretAsVolt = false;
 
-    QCustomPlot *qPlotSpectrogram;
+
+
+    float g1_Value=0;   QString g1_Unit = "dB"; float g1_lin=1;
+    float g2_Value=0;  QString g2_Unit= "dB" ; float g2_lin=1;
+    float gSensi_Value=1; QString gSensi_Unit= "V/Pa";float gSensi_lin=1;
+
+
+
+    float maxValueInV,maxValueInPa;
+
+
+
+    Spectrogram *qPlotSpectrogram;
     QCustomPlot *qPlotOscillogram;
     AudioEngine *m_AudioEngine;
+
+
 
     QVector<double> ReadPoints_x;
     QVector<double> ReadPoints_y;
     QVector<double> rectPointsy;
 
-    QReadWriteLock lock;
+    QVector<double> frame1;
+    QVector<double> frame2;
+
+    QQueue<QVector<double>> framesQueue;
+    QReadWriteLock lock, lock2, lock3, lock4;
 
     void wrireRectData(QVector<double> p) {
         QWriteLocker wlocker(&lock);
         rectPointsy = p;
     };
+
     QVector<double> ReadRectData(){
         QReadLocker rlocker(&lock);
         return rectPointsy;
+    };
+
+    void wrireFrame1Data(QVector<double> p) {
+        QWriteLocker wlocker(&lock3);
+        frame1.append(p);
+    };
+
+    QVector<double> ReadFrame1Data(){
+        QReadLocker rlocker(&lock3);
+        return frame1;
+    };
+
+    void wrireFrame2Data(QVector<double> p) {
+        QWriteLocker wlocker(&lock4);
+        frame2.append(p);
+    };
+
+    QVector<double> ReadFrame2Data(){
+        QReadLocker rlocker(&lock4);
+        return frame2;
+    };
+
+    void writeData(QVector<double> p,QVector<double> q) {
+        QWriteLocker wlocker(&lock2);
+        ReadPoints_x.append(p);
+        ReadPoints_y.append(q);
+    };
+
+    void clearData() {
+        QWriteLocker wlocker(&lock2);
+        ReadPoints_x.clear();
+        ReadPoints_y.clear();
+    };
+
+    void ReadData(QVector<double> &p,QVector<double> &q) {
+        QReadLocker rlocker(&lock2);
+        p=ReadPoints_x;
+        q=ReadPoints_y;
+        ReadPoints_x.clear();
+        ReadPoints_y.clear();
     };
 
 };

@@ -4,21 +4,22 @@
 #include <QWidget>
 #include <QRect>
 #include <QPainter>
-
+#include "datasharer.h"
 
 class LevelMeter : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit LevelMeter(QWidget *parent = 0);
+    explicit LevelMeter(DataSharer *data, QWidget *parent = 0);
     void paintEvent(QPaintEvent *) override;
+    DataSharer *m_data;
 
 signals:
 
 public slots:
-    void levelMeterChanged(float level);
-
+    //void levelMeterChanged(float level);
+    void updateData();
 private :
     QRect rectBackground;
     int x1, y1, x2, y2;

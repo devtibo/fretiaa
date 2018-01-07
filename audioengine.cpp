@@ -26,7 +26,7 @@ AudioEngine::AudioEngine(QObject *parent) : QObject(parent), m_AudioInput(0)
             && inputDeviceInfo.supportedSampleSizes().size() > 0
             && inputDeviceInfo.supportedCodecs().size() > 0) {
 
-        int idxfs = 3;
+        int idxfs = 2;
         formatAudio.setSampleRate(inputDeviceInfo.supportedSampleRates().at(idxfs)); // set to 0 for 8kHz
         formatAudio.setChannelCount(inputDeviceInfo.supportedChannelCounts().at(0));
         formatAudio.setSampleSize(inputDeviceInfo.supportedSampleSizes().at(1));// set to 1 for 16bits

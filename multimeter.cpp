@@ -1,8 +1,11 @@
 #include "multimeter.h"
 #include <QGridLayout>
 
-MultiMeter::MultiMeter(QWidget *parent) : QWidget(parent)
+
+MultiMeter::MultiMeter(DataSharer *data, QWidget *parent) : QWidget(parent)
 {
+
+    m_data=data;
     // Create widgets and the layout
     QFont f = font();
     f.setUnderline(true);
@@ -89,30 +92,32 @@ float MultiMeter::getMaxValueInPa(){return maxVal_Pa;}
 /** =========== SLOTS ============= **/
 /** =============================== **/
 
-// Slot: update
-void MultiMeter::setData(QVector<double> points_y, float sensitivity,bool isVolt)
+void MultiMeter::updateData()
 {
+
+    QVector<double> points_y = m_data->ReadRectData();
+
     float minVal_V, avgVal_V,rmsVal_V;
     float minVal_Pa, avgVal_Pa,rmsVal_Pa;
     double val = 1;
 
     // init Values
-    if (isVolt){
+    if (m_data->interpretAsVolt){
         minVal_V = points_y.at(0);
         maxVal_V = points_y.at(0);
     }
     else
     {
-        minVal_V = points_y.at(0)*sensitivity;
-        maxVal_V = points_y.at(0)*sensitivity;
+        minVal_V = points_y.at(0)*m_data->gSensi_lin;
+        maxVal_V = points_y.at(0)*m_data->gSensi_lin;
     }
     avgVal_V = 0 ;
     rmsVal_V = 0 ;
 
     // Loop to update values
     for (int i=0; i<points_y.size();i++){
-        if (!isVolt)
-            val  = points_y.at(i)* sensitivity;
+        if (!m_data->interpretAsVolt)
+            val  = points_y.at(i)* m_data->gSensi_lin;
         else
             val = points_y.at(i);
 
@@ -123,12 +128,12 @@ void MultiMeter::setData(QVector<double> points_y, float sensitivity,bool isVolt
     }
 
     // convertion from V to Pa
-    maxVal_Pa = maxVal_V / sensitivity;
-    minVal_Pa = minVal_V / sensitivity;
+    maxVal_Pa = maxVal_V / m_data->gSensi_lin;
+    minVal_Pa = minVal_V / m_data->gSensi_lin;
     avgVal_V  = avgVal_V/points_y.size();
-    avgVal_Pa = (avgVal_V/sensitivity)/points_y.size();
+    avgVal_Pa = (avgVal_V/m_data->gSensi_lin)/points_y.size();
     rmsVal_V  = sqrt(rmsVal_V/points_y.size());
-    rmsVal_Pa = sqrt((rmsVal_V/sensitivity)/points_y.size());
+    rmsVal_Pa = sqrt((rmsVal_V/m_data->gSensi_lin)/points_y.size());
 
     // Update labels
     QString text;
@@ -152,6 +157,8 @@ void MultiMeter::setData(QVector<double> points_y, float sensitivity,bool isVolt
     text.sprintf("%02.3f", avgVal_V);
     lAvgValueV->setText(text);
 
-}
+    m_data->maxValueInPa = maxVal_Pa;
+    m_data->maxValueInV = maxVal_V;
 
+}
 

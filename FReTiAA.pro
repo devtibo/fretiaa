@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui multimedia
+QT       += core gui multimedia concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
@@ -61,7 +61,8 @@ SOURCES += main.cpp\
     qcpitemtracerbars.cpp \
     qcpitemtracercolormap.cpp \
     windows.cpp \
-    inputaudioreadthread.cpp
+    inputaudioreadthread.cpp \
+    spectrumonshot.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot/qcustomplot.h \
@@ -105,7 +106,8 @@ HEADERS  += mainwindow.h \
     qcpitemtracerbars.h \
     qcpitemtracercolormap.h \
     windows.h \
-    inputaudioreadthread.h
+    inputaudioreadthread.h \
+    spectrumonshot.h
 
 RESOURCES += \
     ressources.qrc

@@ -2,6 +2,26 @@
 #include <QDesktopWidget>
 #include "qfgraph.h"
 
+#include <QtConcurrent>
+#include <QFuture>
+#include <QtConcurrentRun>
+
+
+using namespace QtConcurrent;
+
+OctaveSpectrumWin::OctaveSpectrumWin(QWidget *)
+{
+    ;
+}
+
+// OverLoad CLOSE Request
+void OctaveSpectrumWin::closeEvent( QCloseEvent* event )
+{
+    emit octaveIsClosing();
+    event->accept();
+}
+
+
 OctaveSpectrum::OctaveSpectrum(DataSharer* data, QWidget* parent)
 {
     mParent = parent;
@@ -11,7 +31,7 @@ OctaveSpectrum::OctaveSpectrum(DataSharer* data, QWidget* parent)
     m_filter = new OneNOctaveFilters(m_data);
     cPlot = new QCustomPlot;
     newBars = new QCPBars(cPlot->xAxis, cPlot->yAxis);
-    mWin = new QMainWindow();
+    mWin = new OctaveSpectrumWin();
     // Window configuration
     mWin->setWindowTitle("FReTiAA: Octave Spectrum");
     mWin->setWindowIcon(QIcon(":/icons/iconOctave.png"));
@@ -46,21 +66,17 @@ OctaveSpectrum::OctaveSpectrum(DataSharer* data, QWidget* parent)
     mWin->setCentralWidget(m_qcfgraph);
 
     cPlot->replot(QCustomPlot::rpQueuedReplot);
+
+   // connect(this,SIGNAL(destroyed(QObject* e)),this, SLOT(closeEvent(QObject *e)));
 }
 
 
-// OverLoad CLOSE Request
-void OctaveSpectrum::closeEvent( QCloseEvent* event )
-{
-    emit octaveIsClosing();
-    event->accept();
-}
-
+/*
 void OctaveSpectrum::runWithParams(QVector<double> samples)
 {
    mSamples  = samples ;
    this->start();
-}
+}*/
 
 
 /** =============================== **/
@@ -68,6 +84,7 @@ void OctaveSpectrum::runWithParams(QVector<double> samples)
 /** =============================== **/
 void OctaveSpectrum::run()
 {
+    mSamples = m_data->ReadRectData();
     // Declaration
     float rmsValues;
     int j,i;
@@ -82,7 +99,8 @@ void OctaveSpectrum::run()
 
         // reset loop-variables
         rmsValues = 0.0;
-        valuefilt_vec.clear();
+
+        /*valuefilt_vec.clear();
         valuefilt_vec2.clear();
         valuefilt_vec3.clear();
 
@@ -94,8 +112,10 @@ void OctaveSpectrum::run()
             //rmsValues  = data.at(idx);//(float)rmsValues + (valuefilt_vec3.at(j).y()*valuefilt_vec3.at(j).y()) / (float)m_data->length_fft;
             // Compute RMS
             rmsValues  = (float)rmsValues + (valuefilt_vec.at(j)*valuefilt_vec.at(j)) ;
-        }
+        }*/
 
+        QFuture<float> f1 = QtConcurrent::run(this,&OctaveSpectrum::computeOneBand,i, mSamples);
+         rmsValues = f1.result();
         // Convert to  dB SPL
         rmsValues/= (float)m_data->rectAnalysisLength;
         rmsValues = 20.0*log10(sqrt(rmsValues)/2e-5);
@@ -108,50 +128,26 @@ void OctaveSpectrum::run()
     cPlot->replot(QCustomPlot::rpQueuedReplot);
 }
 
-// Slot: Update
-void OctaveSpectrum::setData(QVector<double> data)
+
+float OctaveSpectrum::computeOneBand(int &i, QVector<double> &samples)
 {
-    //ORDRE 6 /Devrai suffir 2 ou filtre en HF hors classe
-    // Declaration
+
+    QVector<double> valuefilt_vec;
+    QVector<double> valuefilt_vec3;
+    QVector<double> valuefilt_vec2;
     float rmsValues;
-    int j,i;
 
-    //Reset variables
-    rmsValuesVec.clear();
-    xData.clear();
-
-    for( i=0; i<m_data->numOctaveFilters; i++)
-    {
-        xData.append(i);
-
-        // reset loop-variables
-        rmsValues = 0.0;
-        valuefilt_vec.clear();
-        valuefilt_vec2.clear();
-        valuefilt_vec3.clear();
-
-        // Apply filters
-        for (j=0; j < (m_data->rectAnalysisLength);j++) {
-            valuefilt_vec.append(m_filter->filters_FcHigh_stage1.at(i)->process(m_filter->filters_FcLow_stage1.at(i)->process(data.at(j))));
-            valuefilt_vec2.append(m_filter->filters_FcHigh_stage2.at(i)->process(m_filter->filters_FcLow_stage2.at(i)->process(valuefilt_vec.at(j))));
-            valuefilt_vec3.append(m_filter->filters_FcHigh_stage3.at(i)->process(m_filter->filters_FcLow_stage3.at(i)->process(valuefilt_vec2.at(j))));
-            //rmsValues  = data.at(idx);//(float)rmsValues + (valuefilt_vec3.at(j).y()*valuefilt_vec3.at(j).y()) / (float)m_data->length_fft;
-            // Compute RMS
-            rmsValues  = (float)rmsValues + (valuefilt_vec.at(j)*valuefilt_vec.at(j)) ;
-        }
-
-        // Convert to  dB SPL
-        rmsValues/= (float)m_data->rectAnalysisLength;
-        rmsValues = 20.0*log10(sqrt(rmsValues)/2e-5);
-        rmsValuesVec.append(rmsValues);
+    for (int j=0; j < (m_data->rectAnalysisLength);j++) {
+        valuefilt_vec.append(m_filter->filters_FcHigh_stage1.at(i)->process(m_filter->filters_FcLow_stage1.at(i)->process(samples.at(j))));
+        valuefilt_vec2.append(m_filter->filters_FcHigh_stage2.at(i)->process(m_filter->filters_FcLow_stage2.at(i)->process(valuefilt_vec.at(j))));
+        valuefilt_vec3.append(m_filter->filters_FcHigh_stage3.at(i)->process(m_filter->filters_FcLow_stage3.at(i)->process(valuefilt_vec2.at(j))));
+        //rmsValues  = data.at(idx);//(float)rmsValues + (valuefilt_vec3.at(j).y()*valuefilt_vec3.at(j).y()) / (float)m_data->length_fft;
+        // Compute RMS
+        rmsValues  = (float)rmsValues + (valuefilt_vec.at(j)*valuefilt_vec.at(j)) ;
     }
 
-    // Update DATA
-    newBars->setData(xData,rmsValuesVec); // NOT VERY GOOD SHOULD BE DONE USING SIGNAL/SLOT
-
-    cPlot->replot(QCustomPlot::rpQueuedReplot);
+    return rmsValues;
 }
-
 
 
 

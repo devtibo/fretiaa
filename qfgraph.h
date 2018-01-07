@@ -29,6 +29,7 @@ public:
 
     void setToolBarVisible(bool);
     bool ToolBarVisible();
+
 private :
     void resizeAxisDialog(QCPAxis*, QPoint );
     QPoint contextPos;
@@ -60,6 +61,7 @@ private :
     int isXYValueMode = false;
 signals:
     void exportData();
+
 public slots:
 
 private slots:
