@@ -62,7 +62,8 @@ SOURCES += main.cpp\
     qcpitemtracercolormap.cpp \
     windows.cpp \
     inputaudioreadthread.cpp \
-    spectrumonshot.cpp
+    spectrumonshot.cpp \
+    qfcolormapdata.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot/qcustomplot.h \
@@ -107,7 +108,8 @@ HEADERS  += mainwindow.h \
     qcpitemtracercolormap.h \
     windows.h \
     inputaudioreadthread.h \
-    spectrumonshot.h
+    spectrumonshot.h \
+    qfcolormapdata.h
 
 RESOURCES += \
     ressources.qrc
@@ -117,3 +119,8 @@ DISTFILES += \
     AUTHORS \
     LICENSE \
     CHANGELOG
+
+LIBS += -lsndfile
+#INCLUDEPATH += ./soundfile-2.2/include
+#INCLUDEPATH += ./soundfile-2.2/src
+

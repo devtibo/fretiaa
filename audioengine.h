@@ -19,10 +19,10 @@ public:
     float getFs();
     QAudioFormat formatAudio;
     QAudioDeviceInfo inputDeviceInfo;
-    QStringList getSupportedSampleRatesAsString();
-    QStringList getSupportedSampleSizesAsString();
-    QStringList getSupportedCodecsAsString();
-    QStringList getSupportedChannelCountsAsString();
+    QStringList getsavefilefileupportedSampleRatesAsString();
+    QStringList getsavefilefileupportedSampleSizesAsString();
+    QStringList getsavefilefileupportedCodecsAsString();
+    QStringList getsavefilefileupportedChannelCountsAsString();
 
 
     int soundBufferSize;

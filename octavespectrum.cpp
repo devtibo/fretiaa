@@ -163,7 +163,7 @@ void OctaveSpectrum::onExportData()
 
     // Open dialogBox
     QFileDialog m_fileDialog;
-    QString fname  = m_fileDialog.getSaveFileName(mParent, "Save file", "", ".csv");
+    QString fname  = m_fileDialog.getSaveFileName(mParent, "Save file", "", "Comma Separated Values(*.csv)");
 
     // Save Data if file name is not empty and if SAVE button was Clicked
     if ( !fname.isEmpty() && m_fileDialog.result()==QFileDialog::Accept)

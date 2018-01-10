@@ -52,7 +52,7 @@ AudioEngine::~AudioEngine()
         m_AudioInput->stop();
 }
 
-QStringList AudioEngine::getSupportedSampleRatesAsString(){
+QStringList AudioEngine::getsavefilefileupportedSampleRatesAsString(){
     QStringList list;
     for (int i=0; i< inputDeviceInfo.supportedSampleRates().size();i++)
         list.append(QString::number(inputDeviceInfo.supportedSampleRates().at(i)));
@@ -60,7 +60,7 @@ QStringList AudioEngine::getSupportedSampleRatesAsString(){
     return list;
 }
 
-QStringList AudioEngine::getSupportedChannelCountsAsString()
+QStringList AudioEngine::getsavefilefileupportedChannelCountsAsString()
 {
     QStringList list;
     for (int i=0; i< inputDeviceInfo.supportedChannelCounts().size();i++)
@@ -70,7 +70,7 @@ QStringList AudioEngine::getSupportedChannelCountsAsString()
 }
 
 
-QStringList AudioEngine::getSupportedSampleSizesAsString()
+QStringList AudioEngine::getsavefilefileupportedSampleSizesAsString()
 {
     QStringList list;
     for (int i=0; i< inputDeviceInfo.supportedSampleSizes().size();i++)
@@ -80,7 +80,7 @@ QStringList AudioEngine::getSupportedSampleSizesAsString()
 }
 
 
-QStringList AudioEngine::getSupportedCodecsAsString()
+QStringList AudioEngine::getsavefilefileupportedCodecsAsString()
 {
     return inputDeviceInfo.supportedCodecs();
 }

@@ -40,14 +40,14 @@ Functionnalities:
 +       superimpose Plot Intensity along all acsuiqition
 +       (Cepstrum)
 +       (Modulation Spectrum)
-+       Import/Open Wav Files
+[DONE]  Import/Open Wav Files
 +       Spectrogram SPEECH MODE
 [DONE]  KeyBoard ShortCut (Pause, Run, etc...)
 +       Move Trigger level using arrows UP/DOWN
 [DONE]  Add a View menu including all tools
 +       Use only one QAction for menu "view" and toolbar
 [DONE]  Add tools menu include HP and Trigger
-+       Overlap Add in fly for spectrogrzm for overlap 50%
+[DONE]  Overlap Add in fly for spectrogrzm for overlap 50%
 +       Overlap Add in fly for spectrogrzm for divers overlap
 
 Code Improvements:
@@ -73,10 +73,15 @@ note: Calling setData and replot in different thread cause crash. Use mutex
 [DONE]  Create Function like createMenu, createToolBar, etc... to render the code more readable
 +       Choose a faster FFT algortihm than fftreal like FFTW3 !
 +       double click on selected reactangle to move it
++       Move Rectangle with Arrow
 +++     Replace following by a DCPGridLayout to use MarginGroup an align axesRect
 [DONE]	use AddData instead of setData and only push read data and move xaxis instead of replacing all the set which take a long long time!!!!!
 [DONE]  MULTITHREADING for each octave spectrum calculation !!!
-+       Replace QThread by QConcurrent for automatic limit number of core used ?????
++       Replace QThread by QConcurrent for automatic limit number of core used in Spectrum/octave/etc...?????
++      Is Class OCtaveSpectrum do I nneed to still it as a QThread subclass (now we used Qtconcurrent for processing). Mayybe just to plot?
++      use SetData instead of SetCell for plotting Spectrogram
++       Elegant convertion between Array, string and QVector and QString (char* = QVector.ToStdString().c_str());
++       Progress bar as a thread. because he takes a lot of ressource to replot
 
 [NOSOLUTION]   Trigger tkae various time to stop, normal because we are obliagte to watch half of rectangle because of number of data read (thus the point at the middle never correspond!) Look from end to begin of rectagnel to be more reactive. TO be correct te signal should be realign aftger trigger detection !!!
 
@@ -108,73 +113,10 @@ According to QCustomPlot instead of using SetData is better to set addData and t
 +       Spectrogram XY f-value not correct : no zero-frequency !
 ++      CHANGE CURSOR OVE TRIGGER NOT WORKING !!! [BUG]  Change mouse curor for trigger level move : make menu innaccessible because WRONG use of "parent" in oscillogram
 [NoMORE]       Observation time set to 0.5@Fs44100 cause not equal vector size
-+++     Export  Data on Oscillogram using thread not workiong, similar with spectrogram
-
+[DONE]  Export  Data on Oscillogram using thread not workiong, similar with spectrogram
++       FlushAll() not working properly one ore more last data leave in memory
 
 
 --------------------------
-
-
-//FRAMMING FOR SPECTROGRAM
-if (frame1.size() == m_data->length_fft_spectrogram) // if frame1 is full. Clear frame1. Copy leaving points in frame1 and set the sample counter according to the number of leaving points.
-{
-    QTextStream stream(&fid);
-    for (int i=0; i<frame1.size(); i++)
-        stream << frame1.at(i) << "\n";
-
-    frame1 = frame1Leaving;
-    framesCpt1 = frame1Leaving.size();
-}
-
-if(  (framesCpt1 + (maxSize/resolution)) > m_data->length_fft_spectrogram ) // if only on part of acquisition sould be copy in frame1
-{
-    //qDebug("In If (%d)",framesCpt1 );
-    framesCpt1 =   m_data->length_fft_spectrogram  -  framesCpt1; // remaining points after fulling frame1
-
-    for(int i=0;i<(maxSize/resolution);i++) // for all acquisition sample
-        if (i< framesCpt1) // until frame1 isn't full (i.e.  if (frame1.size() < m_data->length_fft_spectrogram ))
-            frame1.append( points_y.at(i));
-        else
-            frame1Leaving.append( points_y.at(i)); // save remaining points for the next pass
-
-    //qDebug("In If (%d)",framesCpt1 );
-}
-else // if whole acquisition should be copy in frame1
-{
-    frame1Leaving.clear();
-    // Copy frame
-    for(int i=0;i<(maxSize/resolution);i++)
-        frame1.append( points_y.at(i));void InputAudioReadThread::processFrame1_inFLy()
-        {
-            //FRAMMING FOR SPECTROGRAM
-            if (frame1.size() == m_data->length_fft_spectrogram) // if frame1 is full. Clear frame1. Copy leaving points in frame1 and set the sample counter according to the number of leaving points.
-            {
-                frame1 = frame1Leaving;
-                framesCpt1 = frame1Leaving.size();
-            }
-
-            if(  (framesCpt1 > m_data->length_fft_spectrogram ) // if only on part of acquisition sould be copy in frame1
-            {
-                 framesCpt1 =   m_data->length_fft_spectrogram  -  framesCpt1; // remaining points after fulling frame1
-                 if (i< framesCpt1) // until frame1 isn't full (i.e.  if (frame1.size() < m_data->length_fft_spectrogram ))
-                 frame1.append( points_y.at(i));
-                 else
-                 frame1Leaving.append( points_y.at(i)); // save remaining points for the next pass
-                 else // if whole acquisition should be copy in frame1
-            {
-                 frame1Leaving.clear();
-                 for(int i=0;i<(maxSize/resolution);i++)
-                 frame1.append( points_y.at(i));
-        }
-                 framesCpt1 ++;
-
-        }
-
-
-    //qDebug("In else (%d) ",maxSize/resolution);
-}
-framesCpt1 += (maxSize/resolution);
-
-//qDebug() <<"#acquisition:" <<nbreOfSamples << "(" << points_y.size() <<   "), inFrame1:" << frame1.size() <<"(" << framesCpt1 <<")";
-//qDebug() << "leaving" << frame1Leaving.size();
-
+DEPDENCIES:
+-libsndfile

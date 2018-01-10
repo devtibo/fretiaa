@@ -38,7 +38,7 @@ AudioInputConfigDial::AudioInputConfigDial(AudioEngine *audioengine, QWidget*)
     // Sampling frequency Title and ComboBox filling
     QLabel *l1 = new QLabel("Sampling Frequency (Hz) :");
     layout->addWidget(l1);
-    cbxSampleRate->addItems(audioengine->getSupportedSampleRatesAsString());
+    cbxSampleRate->addItems(audioengine->getsavefilefileupportedSampleRatesAsString());
     currentSampleRate = audioengine->formatAudio.sampleRate();
     cbxSampleRate->setCurrentText(QString::number(currentSampleRate));
     layout->addWidget(cbxSampleRate);
@@ -46,7 +46,7 @@ AudioInputConfigDial::AudioInputConfigDial(AudioEngine *audioengine, QWidget*)
     // Sample size Title and ComboBox filling
     QLabel *l2 = new QLabel("Sample Size (Bits) :");
     layout->addWidget(l2);
-    cbxSampleSize->addItems(audioengine->getSupportedSampleSizesAsString());
+    cbxSampleSize->addItems(audioengine->getsavefilefileupportedSampleSizesAsString());
     currentSampleSize = audioengine->formatAudio.sampleSize();
     cbxSampleSize->setCurrentText(QString::number((currentSampleSize)));
     layout->addWidget(cbxSampleSize);
@@ -54,7 +54,7 @@ AudioInputConfigDial::AudioInputConfigDial(AudioEngine *audioengine, QWidget*)
     // Channel count Title and ComboBox filling
     QLabel *l3 = new QLabel("Channel Count :");
     layout->addWidget(l3);
-    cbxChannelCount->addItems(audioengine->getSupportedChannelCountsAsString());
+    cbxChannelCount->addItems(audioengine->getsavefilefileupportedChannelCountsAsString());
     currentChannelCount = audioengine->formatAudio.channelCount();
     cbxChannelCount->setCurrentText(QString::number(currentChannelCount));
     layout->addWidget(cbxChannelCount);
@@ -63,7 +63,7 @@ AudioInputConfigDial::AudioInputConfigDial(AudioEngine *audioengine, QWidget*)
     // Codec Title and ComboBox filling
     QLabel *l4 = new QLabel("Codecs :");
     layout->addWidget(l4);
-    cbxCodec->addItems(audioengine->getSupportedCodecsAsString());
+    cbxCodec->addItems(audioengine->getsavefilefileupportedCodecsAsString());
     currentCodec  =audioengine->formatAudio.codec();
     cbxCodec->setCurrentText(currentCodec);
     layout->addWidget(cbxCodec);

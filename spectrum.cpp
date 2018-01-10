@@ -134,7 +134,7 @@ void Spectrum::onExportData()
         return;
     }
 
-    QString fname  = QFileDialog::getSaveFileName(mParent, "Save file", "", ".csv");
+    QString fname  = QFileDialog::getSaveFileName(mParent, "Save file", "", "Comma Separated Values(*.csv)");
     if ( !fname.isEmpty())
     {
         QFile f( fname );

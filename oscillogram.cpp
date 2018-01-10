@@ -153,13 +153,14 @@ void Oscillogram::run()
 
 void Oscillogram::updateXSpectrogramAxes(QCPRange mRange)
 {
+
     if(m_Data->isSpectrogramShow) // TODO :: connect or disconnect signal instead
     {
         //m_Data->qPlotSpectrogram->xAxis->setRange(cPlot->xAxis->range());
 
-        m_Data->qPlotSpectrogram->cPlot->xAxis->setRange(mRange);// Try this way
+        m_Data->qPlotSpectrogram->cPlot->xAxis->setRange(QCPRange(mRange.lower + ((float)m_Data->length_fft_spectrogram/2.0)/m_Data->fs, mRange.upper-((float)m_Data->length_fft_spectrogram/2.0)/m_Data->fs));// Try this way
         m_Data->qPlotSpectrogram->colorMap->data()->setRange(mRange, QCPRange(0, float(m_Data->fs/2000)));
-        //m_Data->qPlotSpectrogram->cPlot->gra
+
         if(m_Data->isLiveView==0)
         m_Data->qPlotSpectrogram->cPlot->replot();
     }
@@ -177,7 +178,7 @@ void Oscillogram::onExportData()
 
 
 
-    QString fname  = QFileDialog::getSaveFileName(mparent, "Save file", "", ".csv");
+    QString fname  = QFileDialog::getSaveFileName(mparent, "Save file", "", "Comma Separated Values(*.csv)");
     if ( !fname.isEmpty())
     {
         QFile f( fname );

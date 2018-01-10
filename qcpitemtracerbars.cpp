@@ -89,7 +89,7 @@ void QCPItemTracerBars::setStyle(QCPItemTracerBars::TracerStyle style)
   QCPItemPosition::ptPlotCoords and the axes will be set to the axes of \a graph.
 
   To free the tracer from any graph, set \a graph to 0. The tracer \a position can then be placed
-  freely like any other item position. This is the state the tracer will assume when its graph gets
+  freely like any other item position. This is the state the tracer will assume when its graph getsavefilefile
   deleted while still attached to it.
 
   \see setGraphKey

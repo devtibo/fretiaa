@@ -41,6 +41,10 @@ private :
     //![] Multimeter
     MultiMeter *multiMeterOsc;
 
+
+    //MENU
+    QAction *loadWavFileAction;
+
     //![] TOOL BAR
     QAction *liveView ;
     bool isLiveView=true;
@@ -96,6 +100,8 @@ private :
     void createOptionsMenu();
     void createHelpMenu();
 
+    void flushAll();
+
     InputAudioReadThread *mAudioThread;
 
 public slots:
@@ -117,7 +123,7 @@ public slots:
     void onMoveAnalyseRect(bool);
     void updateTriggered();
 
-    // Slot to update widgets
+    // Slot to update widgetsavefilefile
     void updateSpectrogram();
     void updateSpectrogramOnShot();
 
@@ -136,6 +142,8 @@ public slots:
     void openAudioConfigDialog();
     void openGainConfigDialog();
     void openAboutDialog();
+
+    void onLoadWavFile();
 
     void exitApp();
 

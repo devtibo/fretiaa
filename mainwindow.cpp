@@ -9,6 +9,7 @@
 #include "gainconfigdial.h"
 #include "aboutdialog.h"
 #include "qfgraph.h"
+#include "sndfile.h"
 
 
 
@@ -300,13 +301,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     RefreshTimer = new QTimer();
     //RefreshTimer->setInterval(50);
-    RefreshTimer->start(100);
+    RefreshTimer->start(50);
 
 
     //   connect(mAudioThread, SIGNAL(finished()),cPlotOscillogram, SLOT(start()));
 
     connect(mAudioThread,SIGNAL(finished()),this,SLOT(connectWidgets()));
-   // connect(cPlotOscillogram,SIGNAL(rectDataAvailable()),this,SLOT(connectRectWidgets()));
+    // connect(cPlotOscillogram,SIGNAL(rectDataAvailable()),this,SLOT(connectRectWidgets()));
 
     //  connect(mAudioThread,SIGNAL(finished()),RefreshTimer,SLOT(start()));
     // connect(mAudioThread,SIGNAL(finished()),this,SLOT(updateOscData()));
@@ -336,7 +337,7 @@ MainWindow::MainWindow(QWidget *parent)
     createToolsMenu();
     createOptionsMenu();
     createHelpMenu();
-
+    loadWavFileAction->setEnabled(false);
 
     // plotSpectogramButtonChanged(false);
     // data->isSpectrogramShow=false;
@@ -383,12 +384,16 @@ void MainWindow::createFileMenu()
     exportSubMenu->addAction(exportSpectrogramDataAction);
     fileMenu->addMenu(exportSubMenu);
 
+    loadWavFileAction = new QAction("&Load WavFile",this);
+    fileMenu->addAction(loadWavFileAction);
+
     QAction *closeAction = new QAction("&Close",this);
     fileMenu->addAction(closeAction);
 
     connect(closeAction,SIGNAL(triggered()),this,SLOT(exitApp()));
     connect(exportOscillogramDataAction,SIGNAL(triggered()), cPlotOscillogram,SLOT(onExportData()));
     connect(exportSpectrogramDataAction,SIGNAL(triggered()), cPlotSpectrogram,SLOT(onExportData()));
+    connect(loadWavFileAction,SIGNAL(triggered()),this,SLOT(onLoadWavFile()));
 }
 
 void MainWindow::createViewMenu()
@@ -561,10 +566,31 @@ void MainWindow::liveViewChanged(bool isChecked)
     data->isLiveView = isLiveView;
     if (isLiveView){
 
+        // Manage with other tools
+        loadWavFileAction->setEnabled(false);
+
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Live View Starting ...");
+        msgBox.setText("Erase current signal before running live view?");
+        msgBox.setStandardButtons(QMessageBox::No);
+        msgBox.addButton(QMessageBox::Yes);
+        msgBox.setDefaultButton(QMessageBox::No);
+        if(msgBox.exec() == QMessageBox::Yes){
+            this->flushAll();
+            // Erase all
+        }else {
+            // do nothing
+        }
+
+
+
         connect(RefreshTimer, SIGNAL(timeout()),cPlotOscillogram, SLOT(start()));
         m_AudioEngine->m_AudioInput->resume();
         liveView->setIcon(QIcon(":/icons/liveViewOnColoredOff.png"));
         interactionHP->setEnabled(true);
+
+
+
     }
     else{
 
@@ -572,6 +598,9 @@ void MainWindow::liveViewChanged(bool isChecked)
         m_AudioEngine->m_AudioInput->suspend();
         liveView->setIcon(QIcon(":/icons/liveViewOnColoredOn.png"));
         interactionHP->setEnabled(false);
+
+        // Manage with other tools
+        loadWavFileAction->setEnabled(true);
     }
 
     updateStatusBar();
@@ -594,7 +623,7 @@ void MainWindow::plotSpectogramButtonChanged(bool isChecked)
     }
     else {
         /* Exemple to delete spectrogram */
-      //  disconnect(RefreshTimer,SIGNAL(timeout()),this, SLOT(updateSpectrogram()));
+        //  disconnect(RefreshTimer,SIGNAL(timeout()),this, SLOT(updateSpectrogram()));
 
         QLayoutItem *item = centralLayout->itemAtPosition(1,1);
         //centralLayout->removeWidget(cPlotSpectrogram->graphViewer());
@@ -815,16 +844,114 @@ void MainWindow::updateSpectrogramOnShot(){
 
 void MainWindow::updateSpectrogram()
 {
-
     cPlotSpectrogram->start();
+}
+
+void MainWindow::flushAll()
+{
+    m_AudioEngine->m_InputDevice->reset();
+
+    cPlotOscillogram->cPlot->graph(0)->data().clear();
+    cPlotOscillogram->cPlot->graph(0)->data().data()->clear();
+
+    cPlotSpectrogram->colorMap->data()->clear();
+    cPlotSpectrogram->colorMap->data()->setSize(cPlotSpectrogram->nx, cPlotSpectrogram->ny); // we want the color map to have nx * ny data points
+    cPlotSpectrogram->idx=0;
+    cPlotSpectrogram->frameCpt = 0;
+    cPlotSpectrogram->shiftmode = false;
+
+    mAudioThread->nbreOfSamples = 0;
+    mAudioThread->points_y.clear();
+    mAudioThread->points_x.clear();
+    mAudioThread->frame1.clear();
+    mAudioThread->frame2.clear();
+    mAudioThread->frame1Leaving.clear();
+    mAudioThread->frame2Leaving.clear();
+    mAudioThread->framesCpt1=0;
+    mAudioThread->framesCpt2=0;
+    //cPlotOscillogram->cPlot->graph()->setData(xtmp,ytmp);
+    //cPlotSpectrogram->colorMap->data()
+
+    cPlotOctaveSpectrum->cPlot->replot();
+    cPlotSpectrogram->cPlot->replot();
 }
 
 
 
 
+void MainWindow::onLoadWavFile()
+{
 
 
 
+    QString fname  = QFileDialog::getOpenFileName(this, "Open file", "./", "Audio File (*.wav)");
+
+    //  return;
+    SF_INFO *sfinfo = new SF_INFO;
+
+    SNDFILE* soundfile=sf_open(fname.toStdString().c_str(),   SFM_READ, sfinfo) ;
+
+    double *audioIn = new double[sfinfo->channels * sfinfo->frames];
+    sf_read_double(soundfile, audioIn, sfinfo->channels * sfinfo->frames);
+
+    QProgressDialog mProgBar(this);
+    mProgBar.setLabelText("Openning in progress...");
+
+    mProgBar.setRange(0,sfinfo->channels * sfinfo->frames-1);
+    mProgBar.show();
+    mProgBar.setValue(0);
+    QApplication::processEvents();
+    cPlotOscillogram->cPlot->xAxis->setRange(0,(sfinfo->channels * sfinfo->frames)/sfinfo->samplerate );
+    cPlotOscillogram->cPlot->yAxis->setRange(-1,1);
+
+    QVector<double> x;
+    QVector<double> y;
+
+    for (int i=0; i < sfinfo->channels * sfinfo->frames; i++)
+    {
+
+        if (i==0)
+        {
+            x.append((i*1.0)/(sfinfo->samplerate*1.0));
+            y.append(audioIn[i]);
+            cPlotOscillogram->cPlot->graph()->setData(x,y);
+        }
+        else
+            cPlotOscillogram->cPlot->graph()->addData((i*1.0)/(sfinfo->samplerate*1.0),audioIn[i]);
+
+
+
+        if(!(i%(10*sfinfo->samplerate)))//Evry 10 seconds chunck
+        {
+            mProgBar.setValue(i);
+            cPlotOscillogram->cPlot->replot();
+            QApplication::processEvents();
+        }
+
+
+    }
+
+    cPlotOscillogram->cPlot->replot();
+
+
+
+    //soundfile.
+
+    /*
+    if ( !fname.isEmpty())
+    {
+        QFile f( fname );
+        f.open( QIODevice::WriteOnly );
+        QTextStream stream(&f);
+
+        for (int i=0; i<cPlot->graph()->dataCount(); i++)
+            stream << cPlot->graph()->data().data()->at(i)->value << "\n";
+
+        f.close();
+    }
+*/
+
+}
 
 
 

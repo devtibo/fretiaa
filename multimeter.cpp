@@ -6,7 +6,7 @@ MultiMeter::MultiMeter(DataSharer *data, QWidget *parent) : QWidget(parent)
 {
 
     m_data=data;
-    // Create widgets and the layout
+    // Create widgetsavefilefile and the layout
     QFont f = font();
     f.setUnderline(true);
 
@@ -42,7 +42,7 @@ MultiMeter::MultiMeter(DataSharer *data, QWidget *parent) : QWidget(parent)
 
     QGridLayout *m_layout = new QGridLayout;
 
-    // Add widgets to layout
+    // Add widgetsavefilefile to layout
     m_layout->addWidget(sep0,0,1,1,2);
 
     m_layout->addWidget(lMaxText,1,0);

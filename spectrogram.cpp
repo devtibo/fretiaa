@@ -67,6 +67,8 @@ Spectrogram::Spectrogram(DataSharer* data, QWidget* parent)
     idx=0;
     input_fft = (float*) malloc (m_data->length_fft_spectrogram * sizeof(float));
     output_fft= (float*) malloc (m_data->length_fft_spectrogram * sizeof(float));
+
+    frameCpt = 0;
 }
 
 /** =============================== **/
@@ -74,7 +76,7 @@ Spectrogram::Spectrogram(DataSharer* data, QWidget* parent)
 /** =============================== **/
 void Spectrogram::update()
 
-{
+{/*
     // float input_fft[m_data->length_fft_spectrogram];
     // float output_fft[m_data->length_fft_spectrogram];
     QVector<double> currentFrame;
@@ -97,14 +99,19 @@ void Spectrogram::update()
         z=20.0*log10((sqrt(output_fft[k]*output_fft[k]+output_fft[k+m_data->length_fft_spectrogram/2] \
                       *output_fft[k+m_data->length_fft_spectrogram/2]))/m_data->length_fft_spectrogram/2.0e-5);
         colorMap->data()->setCell(idx, k, z);
+        double t = frameCpt * m_data->fs / ((float)m_data->length_fft_spectrogram/2.0);
+        double f = k / (m_data->length_fft_spectrogram/2) * m_data->fs/2.0;
+        colorMap->data()->setData( t,f,z);
     }
     idx++;
 
     if(nx==idx)
         idx=0;
 
+    frameCpt ++ ;
 
     cPlot->replot(QCustomPlot::rpQueuedReplot);
+    */
 }
 
 void Spectrogram::updateXSpectrogramAxes(QCPRange)
@@ -132,7 +139,7 @@ void Spectrogram::run()
     // float output_fft[m_data->length_fft_spectrogram];
     QVector<double> currentFrame;
 
-
+    double t,f;
 
     currentFrame = m_data->framesQueue.dequeue();
 
@@ -150,19 +157,30 @@ void Spectrogram::run()
                       *output_fft[k+m_data->length_fft_spectrogram/2]))/m_data->length_fft_spectrogram/2.0e-5);
         if (shiftmode==0)
         {
-            colorMap->data()->setCell(idx, k, z);
+            t = (frameCpt+1) *  ((float)m_data->length_fft_spectrogram/2.0)/m_data->fs;
+            f = (float)k / ((float)m_data->length_fft_spectrogram/2.0) * m_data->fs/2.0;
+
+            //colorMap->data()->setData( t,f/1000.0,z);
+  colorMap->data()->setCell( idx,k,z);
+
         }
         else
         {
 
-            colorMap->data()->setCell(idx, k, z);
+            //colorMap->data()->setData( t,f/1000.0,z);
+            colorMap->data()->setCell( idx,k,z);
         }
-    }
-    idx++;
 
+
+    }
+
+    idx++;
+    frameCpt++;
+    //qDebug("%d",idx);
     if(nx==idx)
     {idx=0;
         shiftmode=1;
+
     }
 
 
@@ -180,7 +198,7 @@ void Spectrogram::onExportData()
         return;
     }
 
-    QString fname  = QFileDialog::getSaveFileName(mParent, "Save file", "", ".csv");
+    QString fname  = QFileDialog::getSaveFileName(mParent, "Save file", "", "Comma Separated Values (*.csv)");
     if ( !fname.isEmpty())
     {
         QFile f( fname + ".csv" );

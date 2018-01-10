@@ -37,13 +37,15 @@ public:
     void runWithParams(QVector<double>);
 
     bool lastFrame = 1;
-bool shiftmode=0;
+    bool shiftmode=0;
 
     int idx;
 
     double z;
     float *input_fft;
     float *output_fft;
+
+    qint64 frameCpt;
     //QVector<double> currentFrame;
 
 public slots:

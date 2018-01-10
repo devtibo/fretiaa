@@ -228,7 +228,7 @@ void QFGraph::onInteractionXYPoints(bool isChecked)
     {
 
         //![] ITEM TRACER
-        // add the phase tracer (red circle) which sticks to the graph data (and gets updated in bracketDataSlot by timer event):
+        // add the phase tracer (red circle) which sticks to the graph data (and getsavefilefile updated in bracketDataSlot by timer event):
 
         // add label for phase tracer:
         phaseTracerText = new QCPItemText(cPlot);
