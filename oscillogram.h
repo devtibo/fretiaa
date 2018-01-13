@@ -21,7 +21,7 @@ public:
     ///![] Oscillogram
     QCustomPlot *cPlot;
     //float observationTime;
-    void updateData(QVector<double>, QVector<double>);
+    //void updateData(QVector<double>, QVector<double>);
     void setRectPostion(QPointF, QPointF);
     void setYlabel(QString);
 

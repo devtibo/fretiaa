@@ -19,7 +19,7 @@ Oscillogram::Oscillogram(DataSharer *data, QWidget* parent)
     cPlot->xAxis->setTickLabels(true);
     cPlot->yAxis->setLabel("Pressure (Pa)");
     cPlot->yAxis->setRange(-1,1);
-    cPlot->xAxis->setRange(0,m_Data->observationTime);
+    cPlot->xAxis->setRange(-m_Data->observationTime/2,m_Data->observationTime/2);
     cPlot->setInteraction(QCP::iSelectItems,true);
     cPlot->addGraph();
     cPlot->graph()->setAdaptiveSampling(true);
@@ -60,9 +60,9 @@ Oscillogram::Oscillogram(DataSharer *data, QWidget* parent)
 /** =========== METHODS============ **/
 /** =============================== **/
 
-void Oscillogram::updateData(QVector<double> x, QVector<double> y)
+/*void Oscillogram::updateData(QVector<double> x, QVector<double> y)
 {
-    /*
+
     //   xData =x; yData =y; // Use to export Data // FIXME Try to get Data in QcustomPlot Conatiner directly ! Maybe should be only done in STOP Mode
 
 
@@ -94,8 +94,8 @@ void Oscillogram::updateData(QVector<double> x, QVector<double> y)
         emit(rectDataAvailable());
     }
     cPlot->replot(QCustomPlot::rpQueuedReplot); // QCustomPlot::rpQueuedReplot means when program have the time todo it
-*/
-}
+
+}*/
 
 
 void Oscillogram::setRectPostion(QPointF topLeft, QPointF topRight)
@@ -138,14 +138,28 @@ void Oscillogram::run()
     m_Data->idx_begin = m_Data->fs * m_Data->t_begin;
     this->setRectPostion(QPointF(m_Data->t_begin,1),QPointF(m_Data->t_begin + (m_Data->rectAnalysisDuration),-1));
 
+
+    // Update Triger Line i
+    if (m_Data->isTrigger)
+    {
+        triggerLine->start->setCoords( mRange.lower,triggerLevel);
+        triggerLine->end->setCoords(mRange.upper,triggerLevel);
+    }
+
+
     // Update Rectangle values
-    m_Data->rectPointsy.clear();
+    //m_Data->rectPointsy.clear();
+    //m_Data->ClearRectData();
+    QVector<double> p;
     for (int i=0; i< m_Data->rectAnalysisLength;i++)
     {
         float y = cPlot->graph()->data().data()->at(m_Data->idx_begin+i)->value;
-        m_Data->rectPointsy.append(y);
+        p.append(y);
     }
+
+    m_Data->writeRectData(p);
     emit(rectDataAvailable());
+    //cPlot->replot(); // Cause CRASH !!!!
     cPlot->replot(QCustomPlot::rpQueuedReplot); // QCustomPlot::rpQueuedReplot means when program have the time todo it
     //cPlot->repaint();
 
@@ -157,12 +171,12 @@ void Oscillogram::updateXSpectrogramAxes(QCPRange mRange)
     if(m_Data->isSpectrogramShow) // TODO :: connect or disconnect signal instead
     {
         //m_Data->qPlotSpectrogram->xAxis->setRange(cPlot->xAxis->range());
-
+        // QCPRange mRange = cPlot->xAxis->range();
         m_Data->qPlotSpectrogram->cPlot->xAxis->setRange(QCPRange(mRange.lower + ((float)m_Data->length_fft_spectrogram/2.0)/m_Data->fs, mRange.upper-((float)m_Data->length_fft_spectrogram/2.0)/m_Data->fs));// Try this way
         m_Data->qPlotSpectrogram->colorMap->data()->setRange(mRange, QCPRange(0, float(m_Data->fs/2000)));
 
         if(m_Data->isLiveView==0)
-        m_Data->qPlotSpectrogram->cPlot->replot();
+            m_Data->qPlotSpectrogram->cPlot->replot();
     }
 }
 
@@ -194,22 +208,52 @@ void Oscillogram::onExportData()
 
 void Oscillogram::onMouseMove(QMouseEvent* event)
 {
-    if (m_Data->isRectMove)
+
+    // Solution 1 : try to use pixels instead of x coordinates which may change during rectangle displacement
+
+    if (m_Data->isRectMove) // Manage displacement of Analyse Rectangle
     {
         if(event->buttons() == Qt::MouseButton::LeftButton) // if left mouse button pressed
         {
             double sel;
             double x,y;
-            float windowsTime = m_Data->rectAnalysisDuration;
             sel=rect->selectTest(event->pos(),false,0);
 
-            if (sel <= cPlot->selectionTolerance() || stillMove) // if in rectangle or already mouse button press
+            if (sel <= cPlot->selectionTolerance() || stillMove) // if mouse is in rectangle or already mouse button press
             {
                 stillMove =true; // allow to make quick displacement without staying mouse cursor inside the rectangle
+                
                 cPlot->graph()->pixelsToCoords(event->pos().x(),event->pos().y(),x,y); // get mouse cursor position
 
-                /** Move Retangle **/
-                if ((x+windowsTime/2.0)>m_Data->observationTime){ // Right Limit
+                QPoint pts_tl = cPlot->axisRect()->topLeft();
+
+                int x_pixels = event->pos().x();
+                // Remove half width of rectangle so that the mouse always point te middle of the rectangle
+                // int rectWidth = round(rect->bottomRight->pixelPosition().x()- rect->topLeft->pixelPosition().x());
+
+                float rectPosRatio = (float)(x_pixels-(pts_tl.x()))/(float)cPlot->axisRect()->width();
+
+                if(rectPosRatio < 0)
+                    rectPosRatio = 0;
+
+                if(rectPosRatio > 1)
+                    rectPosRatio = 1;
+
+                m_Data->idx_begin_ratio = rectPosRatio;
+                QCPRange mRange = cPlot->xAxis->range();
+                m_Data->t_begin = mRange.lower + (((mRange.upper - mRange.lower) * m_Data->idx_begin_ratio) - (m_Data->rectAnalysisDuration)/2);
+
+                if (m_Data->t_begin < mRange.lower)
+                    m_Data->t_begin = mRange.lower;
+
+                if (m_Data->t_begin > (mRange.upper-m_Data->rectAnalysisDuration))
+                    m_Data->t_begin = (mRange.upper-m_Data->rectAnalysisDuration);
+
+                m_Data->idx_begin = m_Data->fs * m_Data->t_begin;
+                this->setRectPostion(QPointF(m_Data->t_begin,1),QPointF(m_Data->t_begin + (m_Data->rectAnalysisDuration),-1));
+
+                /** Move Retangle *
+                if ((x+windowsTime/2.0)>m_Data->observationTime){ // Right Limit    int idx_begin;
                     //Move highlight rectangle
                     rect->topLeft->setCoords(m_Data->observationTime- windowsTime,1);
                     rect->bottomRight->setCoords(m_Data->observationTime ,-1);
@@ -229,12 +273,16 @@ void Oscillogram::onMouseMove(QMouseEvent* event)
                     rect->bottomRight->setCoords(x+windowsTime/2.0 ,-1);
                     // Update SharedData
                     m_Data->t_begin = x- windowsTime/2.0 ;
-                }
+                }*/
+
+
             }
         }
         else
             stillMove = false;
 
+        /*
+        // WARNING : NEED TO BE CHANGED !!!!!
         // Update SharedData
         m_Data->idx_begin = round(m_Data->t_begin * m_Data->fs);
         m_Data->idx_begin = m_Data->fs * m_Data->t_begin;
@@ -242,13 +290,24 @@ void Oscillogram::onMouseMove(QMouseEvent* event)
         int idxViewBegin = mRange.lower * m_Data->fs;
         int idxViewEnd= mRange.upper * m_Data->fs;
         m_Data->idx_begin_ratio=  (float)(m_Data->idx_begin - idxViewBegin) / (float)(idxViewEnd-idxViewBegin);
+        // !!!!
+*/
 
         cPlot->replot(QCustomPlot::rpQueuedReplot); //only necessaary if live view is off
-        emit update(); // Signal to update other graph which using rectangle (levelMeter, spectrum, octave)
+
+
+        // Update Rectangle values
+        m_Data->rectPointsy.clear();
+        for (int i=0; i< m_Data->rectAnalysisLength;i++)
+        {
+            float y = cPlot->graph()->data().data()->at(m_Data->idx_begin+i)->value;
+            m_Data->rectPointsy.append(y);
+        }
+        emit(rectDataAvailable());
     }
 
 
-    if (m_Data->isTrigger)
+    if (m_Data->isTrigger) // Managed Trigger Action
     {
         // HERE CHANGE MOUSE CURSOR!!!
 
@@ -268,12 +327,18 @@ void Oscillogram::onMouseMove(QMouseEvent* event)
             sel=triggerLine->selectTest(event->pos(),false,0);
             if (sel <= cPlot->selectionTolerance() || stillMove)
             {
+
+                QCPRange mRange = cPlot->xAxis->range();
+
                 stillMove =true; // allow to make quick displacement without staying mouse cursor inside the rectangle
                 double x,y;
                 cPlot->graph()->pixelsToCoords(event->pos().x(),event->pos().y(),x,y); // get mouse cursor position
-                triggerLine->start->setCoords(0,y);
-                triggerLine->end->setCoords(m_Data->observationTime,y);
+                triggerLine->start->setCoords(mRange.lower,y);
+                triggerLine->end->setCoords(mRange.upper,y);
                 triggerLevel = y;
+
+                cPlot->replot(QCustomPlot::rpQueuedReplot); //only necessaary if live view is off
+
             }
         }
         else

@@ -18,8 +18,8 @@ public:
     float fs;
 
     //Analysis window
-    float t_begin;
-    int idx_begin;
+    float t_begin = 0;
+    int idx_begin = 0;
     float idx_begin_ratio = 0.5;
 
 
@@ -61,47 +61,52 @@ public:
     QQueue<QVector<double>> framesQueue;
     QReadWriteLock lock, lock2, lock3, lock4;
 
-    void wrireRectData(QVector<double> p) {
+    void writeRectData(QVector<double> p) {
         QWriteLocker wlocker(&lock);
         rectPointsy = p;
-    };
+    }
 
     QVector<double> ReadRectData(){
         QReadLocker rlocker(&lock);
         return rectPointsy;
-    };
+    }
+
+    void ClearRectData(){
+        QReadLocker rlocker(&lock);
+        rectPointsy.clear();
+    }
 
     void wrireFrame1Data(QVector<double> p) {
         QWriteLocker wlocker(&lock3);
         frame1.append(p);
-    };
+    }
 
     QVector<double> ReadFrame1Data(){
         QReadLocker rlocker(&lock3);
         return frame1;
-    };
+    }
 
     void wrireFrame2Data(QVector<double> p) {
         QWriteLocker wlocker(&lock4);
         frame2.append(p);
-    };
+    }
 
     QVector<double> ReadFrame2Data(){
         QReadLocker rlocker(&lock4);
         return frame2;
-    };
+    }
 
     void writeData(QVector<double> p,QVector<double> q) {
         QWriteLocker wlocker(&lock2);
         ReadPoints_x.append(p);
         ReadPoints_y.append(q);
-    };
+    }
 
     void clearData() {
         QWriteLocker wlocker(&lock2);
         ReadPoints_x.clear();
         ReadPoints_y.clear();
-    };
+    }
 
     void ReadData(QVector<double> &p,QVector<double> &q) {
         QReadLocker rlocker(&lock2);
@@ -109,7 +114,7 @@ public:
         q=ReadPoints_y;
         ReadPoints_x.clear();
         ReadPoints_y.clear();
-    };
+    }
 
 };
 

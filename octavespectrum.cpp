@@ -87,7 +87,7 @@ void OctaveSpectrum::run()
     mSamples = m_data->ReadRectData();
     // Declaration
     float rmsValues;
-    int j,i;
+    int i;
 
     //Reset variables
     rmsValuesVec.clear();

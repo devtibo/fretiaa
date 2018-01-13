@@ -42,8 +42,8 @@ MainWindow::MainWindow(QWidget *parent)
     data->rectAnalysisLength = roundUpToNextPowerOfTwo(0.20*m_AudioEngine->getFs());;
     data->rectAnalysisDuration = data->rectAnalysisLength /  data->fs;
     data->observationTime = 10;
-    data->idx_begin = data->observationTime * data->fs - 1.0 * data->rectAnalysisLength ;
-    data->t_begin = 1.0 * data->idx_begin /  data->fs;
+   // data->idx_begin = data->observationTime * data->fs - 1.0 * data->rectAnalysisLength ;
+   // data->t_begin = 1.0 * data->idx_begin /  data->fs;
     data->data_length = data->fs * data->observationTime;
     data->length_fft_spectrogram = roundUpToNextPowerOfTwo(0.02 * m_AudioEngine->getFs());
     //!--------------------------------------------------------------------
@@ -301,7 +301,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     RefreshTimer = new QTimer();
     //RefreshTimer->setInterval(50);
-    RefreshTimer->start(50);
+    RefreshTimer->start(100);
 
 
     //   connect(mAudioThread, SIGNAL(finished()),cPlotOscillogram, SLOT(start()));
@@ -341,6 +341,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // plotSpectogramButtonChanged(false);
     // data->isSpectrogramShow=false;
+
 }
 
 void MainWindow::connectRectWidgets()
