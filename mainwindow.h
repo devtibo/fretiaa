@@ -44,6 +44,7 @@ private :
 
     //MENU
     QAction *loadWavFileAction;
+    QAction *saveWavFileAction;
 
     //![] TOOL BAR
     QAction *liveView ;
@@ -104,6 +105,10 @@ private :
 
     InputAudioReadThread *mAudioThread;
 
+       QBuffer *m_audioOutputIODevice = new QBuffer;
+       QTimer *RefreshTimer2;
+          QCPItemLine *wavPlayLine ;
+
 public slots:
 
     void connectWidgets();
@@ -144,6 +149,11 @@ public slots:
     void openAboutDialog();
 
     void onLoadWavFile();
+    void onWriteWavFile();
+    void onPlayWav();
+    void onRefreshPlayLine();
+    void onAudioStateChanged(QAudio::State);
+
 
     void exitApp();
 

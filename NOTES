@@ -111,7 +111,7 @@ According to QCustomPlot instead of using SetData is better to set addData and t
 [DONE]  XY on octave spectrum cause critical CRASH
 +       XY value using arrow pad not work when more than one is used : because activatedAmbiguously() is emitted and not activated() signal... why?
 +       Spectrogram XY f-value not correct : no zero-frequency !
-++      CHANGE CURSOR OVE TRIGGER NOT WORKING !!! [BUG]  Change mouse curor for trigger level move : make menu innaccessible because WRONG use of "parent" in oscillogram
+[DONE]  CHANGE CURSOR OVE TRIGGER NOT WORKING !!! [BUG]  Change mouse curor for trigger level move : make menu innaccessible because WRONG use of "parent" in oscillogram
 [NoMORE]       Observation time set to 0.5@Fs44100 cause not equal vector size
 [DONE]  Export  Data on Oscillogram using thread not workiong, similar with spectrogram
 +       FlushAll() not working properly one ore more last data leave in memory

@@ -281,18 +281,6 @@ void Oscillogram::onMouseMove(QMouseEvent* event)
         else
             stillMove = false;
 
-        /*
-        // WARNING : NEED TO BE CHANGED !!!!!
-        // Update SharedData
-        m_Data->idx_begin = round(m_Data->t_begin * m_Data->fs);
-        m_Data->idx_begin = m_Data->fs * m_Data->t_begin;
-        QCPRange mRange = cPlot->xAxis->range();
-        int idxViewBegin = mRange.lower * m_Data->fs;
-        int idxViewEnd= mRange.upper * m_Data->fs;
-        m_Data->idx_begin_ratio=  (float)(m_Data->idx_begin - idxViewBegin) / (float)(idxViewEnd-idxViewBegin);
-        // !!!!
-*/
-
         cPlot->replot(QCustomPlot::rpQueuedReplot); //only necessaary if live view is off
 
 

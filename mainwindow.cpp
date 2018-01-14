@@ -11,6 +11,8 @@
 #include "qfgraph.h"
 #include "sndfile.h"
 
+#include <QAudioOutput>
+
 
 
 unsigned int roundUpToNextPowerOfTwo(unsigned int x)
@@ -42,8 +44,8 @@ MainWindow::MainWindow(QWidget *parent)
     data->rectAnalysisLength = roundUpToNextPowerOfTwo(0.20*m_AudioEngine->getFs());;
     data->rectAnalysisDuration = data->rectAnalysisLength /  data->fs;
     data->observationTime = 10;
-   // data->idx_begin = data->observationTime * data->fs - 1.0 * data->rectAnalysisLength ;
-   // data->t_begin = 1.0 * data->idx_begin /  data->fs;
+    // data->idx_begin = data->observationTime * data->fs - 1.0 * data->rectAnalysisLength ;
+    // data->t_begin = 1.0 * data->idx_begin /  data->fs;
     data->data_length = data->fs * data->observationTime;
     data->length_fft_spectrogram = roundUpToNextPowerOfTwo(0.02 * m_AudioEngine->getFs());
     //!--------------------------------------------------------------------
@@ -301,7 +303,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     RefreshTimer = new QTimer();
     //RefreshTimer->setInterval(50);
-    RefreshTimer->start(100);
+    RefreshTimer->start(50);
 
 
     //   connect(mAudioThread, SIGNAL(finished()),cPlotOscillogram, SLOT(start()));
@@ -338,6 +340,7 @@ MainWindow::MainWindow(QWidget *parent)
     createOptionsMenu();
     createHelpMenu();
     loadWavFileAction->setEnabled(false);
+    saveWavFileAction->setEnabled(false);
 
     // plotSpectogramButtonChanged(false);
     // data->isSpectrogramShow=false;
@@ -388,6 +391,14 @@ void MainWindow::createFileMenu()
     loadWavFileAction = new QAction("&Load WavFile",this);
     fileMenu->addAction(loadWavFileAction);
 
+    saveWavFileAction = new QAction("&Save WavFile",this);
+    fileMenu->addAction(saveWavFileAction);
+
+
+    QAction *playAction = new QAction("&Play",this);
+    fileMenu->addAction(playAction);
+    connect(playAction,SIGNAL(triggered()),this,SLOT(onPlayWav()));
+
     QAction *closeAction = new QAction("&Close",this);
     fileMenu->addAction(closeAction);
 
@@ -395,6 +406,8 @@ void MainWindow::createFileMenu()
     connect(exportOscillogramDataAction,SIGNAL(triggered()), cPlotOscillogram,SLOT(onExportData()));
     connect(exportSpectrogramDataAction,SIGNAL(triggered()), cPlotSpectrogram,SLOT(onExportData()));
     connect(loadWavFileAction,SIGNAL(triggered()),this,SLOT(onLoadWavFile()));
+    connect(saveWavFileAction,SIGNAL(triggered()),this,SLOT(onWriteWavFile()));
+
 }
 
 void MainWindow::createViewMenu()
@@ -569,6 +582,7 @@ void MainWindow::liveViewChanged(bool isChecked)
 
         // Manage with other tools
         loadWavFileAction->setEnabled(false);
+        saveWavFileAction->setEnabled(false);
 
         QMessageBox msgBox;
         msgBox.setWindowTitle("Live View Starting ...");
@@ -602,6 +616,7 @@ void MainWindow::liveViewChanged(bool isChecked)
 
         // Manage with other tools
         loadWavFileAction->setEnabled(true);
+        saveWavFileAction->setEnabled(true);
     }
 
     updateStatusBar();
@@ -934,29 +949,142 @@ void MainWindow::onLoadWavFile()
 
     cPlotOscillogram->cPlot->replot();
 
+}
 
 
-    //soundfile.
 
-    /*
-    if ( !fname.isEmpty())
+void MainWindow::onWriteWavFile()
+{
+
+    int nbrePoints = cPlotOscillogram->cPlot->graph()->data().data()->size();
+    float *audioOut = new float[nbrePoints];
+
+    for (int i=0; i<nbrePoints ; i++)
+        audioOut[i]=cPlotOscillogram->cPlot->graph()->data().data()->at(i)->value;
+
+    QString fname  = QFileDialog::getSaveFileName(this, "Save as", "./", "Audio File (*.wav)");
+
+    // Chack if .wav is in the filename else add the extension
+    int tmp = fname.indexOf(".wav");
+    if(tmp==-1)
+        fname.append(".wav");
+
+
+    SF_INFO sfinfo;
+    sfinfo.channels = 1;
+    sfinfo.samplerate = data->fs;
+    switch (m_AudioEngine->formatAudio.sampleSize())
     {
-        QFile f( fname );
-        f.open( QIODevice::WriteOnly );
-        QTextStream stream(&f);
-
-        for (int i=0; i<cPlot->graph()->dataCount(); i++)
-            stream << cPlot->graph()->data().data()->at(i)->value << "\n";
-
-        f.close();
+    case 32 :
+        sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_32; // Change according to audio input config
+        break;
+    case 24 :
+        sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_24; // Change according to audio input config
+        break;
+    case 16 :
+        sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16; // Change according to audio input config
+        break;
+    case 8 :
+        sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_S8; // Change according to audio input config
+        break;
+    default :
+        QErrorMessage msg(this);
+        msg.showMessage("Unknow wavformat (sample size)");
+        break;
     }
-*/
+
+
+    SNDFILE* sndfile = sf_open(fname.toStdString().c_str(), SFM_WRITE, &sfinfo);
+    sf_write_float(sndfile, audioOut, nbrePoints);
+
+}
+
+
+void MainWindow::onPlayWav()
+{
+    QAudioOutput* audio; // class member.
+    QAudioFormat format;
+
+
+
+    format = m_AudioEngine->formatAudio;
+
+
+
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+    if (!info.isFormatSupported(format)) {
+        qWarning() << "Raw audio format not supported by backend, cannot play audio.";
+        return;
+    }
+
+    audio = new QAudioOutput(format, this);
+
+
+
+    int nbrePoints = cPlotOscillogram->cPlot->graph()->data().data()->size();
+
+    qint16 *audioOut = new qint16[nbrePoints];
+    for (int i=0; i<nbrePoints ; i++)
+        audioOut[i]= qPow(2,16)/2 * cPlotOscillogram->cPlot->graph()->data().data()->at(i)->value;
+
+
+    format.setSampleSize(nbrePoints);
+    format.setSampleType(QAudioFormat::SignedInt);
+    format.setSampleSize(16);
+
+    QByteArray *m_buffer = new QByteArray(QByteArray::fromRawData(reinterpret_cast<const char*>(audioOut),nbrePoints*sizeof(qint16)));
+
+
+    //  QByteArray *m_buffer = new QByteArray(1024,0);
+
+    m_audioOutputIODevice->close();
+    m_audioOutputIODevice->setBuffer(m_buffer);
+
+    m_audioOutputIODevice->open(QIODevice::ReadOnly);
+
+    audio->start(m_audioOutputIODevice);
+
+    // m_audioOutputIODevice->pos(); // Current positin
+    RefreshTimer2 = new QTimer();
+    //RefreshTimer->setInterval(50);
+    RefreshTimer2->start(200);
+
+    connect(RefreshTimer2,SIGNAL(timeout()),this,SLOT(onRefreshPlayLine()));
+    connect(audio,SIGNAL(stateChanged(QAudio::State)),this, SLOT(onAudioStateChanged(QAudio::State)));
+    ;
+
+
+
+    wavPlayLine = new QCPItemLine(cPlotOscillogram->cPlot);
+    wavPlayLine->setVisible(true);
+    wavPlayLine->start->setCoords(0,-1);
+    wavPlayLine->end->setCoords(0,1);
+    wavPlayLine->setPen(QPen(Qt::red,1));
+    cPlotOscillogram->cPlot->replot();
+
+}
+
+
+void MainWindow::onAudioStateChanged(QAudio::State mstate)
+{
+    if (mstate == QAudio::State::IdleState) // End of read
+    {
+        RefreshTimer2->stop();
+        wavPlayLine->setVisible(false);
+            cPlotOscillogram->cPlot->replot();
+    }
 
 }
 
 
 
+void MainWindow::onRefreshPlayLine()
+{
+    float n = (float)m_audioOutputIODevice->pos()/2.0;
+    wavPlayLine->start->setCoords(n/data->fs,-1);
+    wavPlayLine->end->setCoords(n/data->fs,1);
 
-
+    cPlotOscillogram->cPlot->replot();
+}
 
 
