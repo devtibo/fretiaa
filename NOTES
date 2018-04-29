@@ -49,6 +49,7 @@ Functionnalities:
 [DONE]  Add tools menu include HP and Trigger
 [DONE]  Overlap Add in fly for spectrogrzm for overlap 50%
 +       Overlap Add in fly for spectrogrzm for divers overlap
++       Make all graph to be dockable! QDockwindow
 
 Code Improvements:
 ------------------
